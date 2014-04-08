@@ -1,0 +1,278 @@
+#include "forecastingModels.h"
+
+using namespace Rcpp ;
+
+// ---------------------------- Div suport functions -----------------------------------------------------------------
+void unityFunc(NumericVector &y){
+	for(int i=0;i<y.size();i++)
+		y(i) = 1/(1+::exp(-y(i)));
+
+}
+
+
+// ---------------------------- Exponential smoothing 1 --------------------------------------------------------------
+SEXP EXPSMOOTH1(SEXP X, SEXP PARAM, SEXP STARTVAL, SEXP NOUT){
+	NumericVector nvX(X); int n=nvX.size();
+	int f=as<int>(NOUT); NumericVector nvFIL(n+f); //f = number of forecasts to be returned
+	
+	double dLAMBDA=as<double>(PARAM);
+	
+	nvFIL(0)=as<double>(STARTVAL);
+	
+	for(int i=1;i<(n+f);i++){
+		if(i<=n){
+		nvFIL(i)=(1-dLAMBDA)*nvX(i-1)+dLAMBDA*nvFIL(i-1);
+		}else{
+		nvFIL(i)=nvFIL(n-1);
+		}
+	
+	}
+
+	return(wrap(nvFIL));
+}
+
+// ---------------------------- Exponential smoothing 2 --------------------------------------------------------------
+SEXP EXPSMOOTH2(SEXP X, SEXP PARAM, SEXP THOLD, SEXP STARTVAL, SEXP NOUT){
+	NumericVector nvX(X); int n=nvX.size();
+	int f=as<int>(NOUT); NumericVector nvFIL(n+f); //f = number of forecasts to be returned
+	
+	NumericVector nvTHOLD(THOLD);
+			
+	double dLAMBDA=as<double>(PARAM);
+	
+	nvFIL(0)=as<double>(STARTVAL);
+	
+	for(int i=1;i<(n+f);i++){
+		if(i<n){
+
+			if(nvX(i)>0){
+				if(nvX(i)>(nvFIL(i-1)+nvTHOLD(i))){
+					//std::cout << "Value before: " << nvX(i) << " E: " << nvFIL(i-1) << "  THOLD: " << nvTHOLD(i) << std::endl;
+					nvFIL(i)=(1-dLAMBDA)*(nvFIL(i-1)+nvTHOLD(i))+dLAMBDA*nvFIL(i-1);
+					//nvX(i)=nvFIL(i-1)+nvTHOLD(i);
+					//std::cout << "Value before: " << nvX(i) << " E: " << nvFIL(i-1) << "  THOLD: " << nvTHOLD(i) << std::endl;
+				}else{
+					nvFIL(i)=(1-dLAMBDA)*nvX(i-1)+dLAMBDA*nvFIL(i-1);
+				}
+			}else{
+				if(nvX(i)<(nvFIL(i-1)-nvTHOLD(i))){
+					//std::cout << "Value before: " << nvX(i) << " E: " << nvFIL(i-1) << "  THOLD: " << nvTHOLD(i) << std::endl;
+					nvFIL(i)=(1-dLAMBDA)*(nvFIL(i-1)-nvTHOLD(i))+dLAMBDA*nvFIL(i-1);
+					//nvX(i)=nvFIL(i-1)-nvTHOLD(i);
+					//std::cout << "Value before: " << nvX(i) << " E: " << nvFIL(i-1) << "  THOLD: " << nvTHOLD(i) << std::endl;
+				}else{
+					nvFIL(i)=(1-dLAMBDA)*nvX(i-1)+dLAMBDA*nvFIL(i-1);
+				}
+			}
+				
+		//nvFIL(i)=(1-dLAMBDA)*nvX(i-1)+dLAMBDA*nvFIL(i-1);
+		}else{
+		nvFIL(i)=nvFIL(n-1);
+		}
+	
+	}
+
+	return(wrap(nvFIL));
+}
+
+// ---------------------------- Holt Winters model 1 -----------------------------------------------------------------
+SEXP EXPSMOOTH3(SEXP X, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
+	NumericVector nvX(X); int n = nvX.size(); int f = as<int>(NOUT);
+	
+	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
+	double alfa = nvPARAM(0); double beta = nvPARAM(1);
+		  
+	NumericVector nvL(n); NumericVector nvT(n); NumericVector nvFIL(n+f);
+	NumericVector nvSTARTVAL(STARTVAL);
+	nvL(0) = nvSTARTVAL(0); nvT(0) = nvSTARTVAL(1); nvFIL(0) = nvX(0);
+	  
+	for(int i=1;i<(n+f);i++){
+		if(i<n){
+			nvFIL(i)=nvL(i-1)+nvT(i-1); //Predicted/Filtered value for "today"
+			nvL(i)=alfa*nvX(i)+(1-alfa)*nvL(i); //Level updated with value of today
+			nvT(i)=beta*(nvL(i)-nvL(i-1))+(1-beta)*nvT(i-1); //Trend updated with change in level
+
+		}else{
+			nvFIL(i) = nvL(n-1)+nvT(n-1)*(i-n+1);
+		}
+	}
+	
+	return(wrap(nvFIL));
+}
+// -------------------------------------------------------------------------------------------------------------------
+
+
+// ---------------------------- simple seasonal Holt Winters model ---------------------------------------------------
+SEXP SEASEXPSMOOTH(SEXP X, SEXP S, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
+	NumericVector nvX(X); int n = nvX.size(); int f = as<int>(NOUT);
+	int s = as<int>(S);
+	
+	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
+	double alfa = nvPARAM(0); double gamma = nvPARAM(1);
+	
+	NumericVector nvL(n); NumericVector nvS(n+s); NumericVector nvFIL(n+f);
+	NumericVector nvSTARTVAL(STARTVAL);
+	nvL(0) = nvSTARTVAL(0); 
+	
+	for(int i=0;i<(s+1);i++)nvS(i)=nvSTARTVAL(i+1);
+	nvFIL(0) = nvX(0);
+
+	for(int i=1;i<(n+f);i++){
+		if(i<n){
+			nvFIL(i)=nvL(i-1)*nvS(i); //Predicted/Filtered value for "today"
+			nvL(i)=alfa*nvX(i)/nvS(i)+(1-alfa)*nvL(i-1); //Level updated with value of today
+			nvS(i+s)=gamma*nvX(i)/nvL(i)+(1-gamma)*nvS(i); //Trend updated with change in level
+		}else{
+			nvFIL(i) = nvL(n-1)*nvS(n+(i-n)%s);
+		}
+	}
+	
+	return(wrap(nvFIL));
+}
+// -------------------------------------------------------------------------------------------------------------------
+
+// ------------------------------ simelar day Holt Winters model -----------------------------------------------------
+SEXP SIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
+	NumericVector nvX(X); NumericVector nvDAYS(DAYS); int n = nvX.size(); 
+	int f = nvDAYS.size()-n; int s = as<int>(S); int d = 0;
+	
+	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
+	double alfa = nvPARAM(0); double gamma = nvPARAM(1);
+	
+	NumericVector nvL(n); NumericVector nvS(s); NumericVector nvFIL(n+f);
+	NumericVector nvSTARTVAL(STARTVAL);
+	nvL(0) = nvSTARTVAL(0); 
+	
+	for(int i=0;i<(s);i++)nvS(i)=nvSTARTVAL(i+1);
+	nvFIL(0) = nvX(0);
+
+	for(int i=1;i<(n+f);i++){
+		d = nvDAYS(i);
+		
+		if(i<n){
+			nvFIL(i)=nvL(i-1)*nvS(d); //Predicted/Filtered value for "today"
+			nvL(i)=alfa*nvX(i)/nvS(d)+(1-alfa)*nvL(i-1); //Level updated with value of today
+			nvS(d)=gamma*nvX(i)/nvL(i)+(1-gamma)*nvS(d); //Trend updated with change in level
+		}else{
+			nvFIL(i) = nvL(n-1)*nvS(d);
+		}
+	}
+	
+	return(wrap(nvFIL));
+}
+// -------------------------------------------------------------------------------------------------------------------
+
+
+// ------------------------------ robust simelar day Holt Winters model -----------------------------------------------
+SEXP RMSIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
+	NumericVector nvX(X); NumericVector nvDAYS(DAYS); int n = nvX.size(); 
+	int f = nvDAYS.size()-n; int s = as<int>(S); int d = 0;
+	
+	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
+	double alfa = nvPARAM(0); double gamma = nvPARAM(1);
+	
+	NumericVector nvS(s); NumericVector nvFIL(n+f);
+	NumericVector nvSTARTVAL(STARTVAL);
+	double dVAR = nvSTARTVAL(0); //variance
+	double dL = nvSTARTVAL(1); //level
+	
+	for(int i=0;i<(s);i++)nvS(i)=nvSTARTVAL(i+2);
+	nvFIL(0) = nvX(0);
+
+	for(int i=1;i<(n+f);i++){
+	std::cout << "loop start, i = " << i << std::endl;
+		d = nvDAYS(i);
+		dVAR = 0.06*pow(nvX(i-1)-nvFIL(i-1), 2)+0.94*dVAR;
+		
+		if(i<n){
+			nvFIL(i)=dL*nvS(d); //Predicted/Filtered value for "today"
+			
+			// If x is more than two standard deviation of filtered value we set it 
+			// equal to filtered value when updating equations
+			if( nvX(i) < (nvFIL(i)-2*sqrt(dVAR)) || nvX(i) > (nvFIL(i)+2*sqrt(dVAR)) ){
+				dL=alfa*nvX(i)/nvS(d)+(1-alfa)*dL; 
+				nvS(d)=gamma*nvX(i)/dL+(1-gamma)*nvS(d); 
+			
+			}else{
+				dL=alfa*nvX(i)/nvS(d)+(1-alfa)*dL; //Level updated with value of today
+				nvS(d)=gamma*nvX(i)/dL+(1-gamma)*nvS(d); //Trend updated with change in level
+			
+			}
+		}else{
+			nvFIL(i) = dL*nvS(d);
+		}
+	}
+	
+	return(wrap(nvFIL));
+}
+// -------------------------------------------------------------------------------------------------------------------
+
+/*
+// ---------------------------- Returns conditional variance for standard GARCH model --------------------------------------
+SEXP HTstdGARCH(SEXP X, SEXP H0, SEXP Param, SEXP Nout) {
+	double dH0 = as<double>(H0); double dNout = as<double>(Nout);
+	NumericVector nvX(X); NumericVector nvParam(Param);
+	
+	int n = nvX.size();
+	double a0 = ::exp(nvParam(0)); double a1 = ::exp(nvParam(1));
+	double b0 = ::exp(nvParam(2));
+  
+	NumericVector H(n+dNout);
+	H(0) = dH0;
+  
+	for(int i=1;i<(n+dNout);i++){
+		//std::cout << "a0: " << a0 << " a1: " << a1 << " b0: " << b0 << std::endl;
+		//std::cout << "pow(nvX(i-1),2)   " << pow(nvX(i-1),2) << std::endl;
+		//std::cout << "a0+a1*pow(nvX(i-1),2)+b0*H(i-1)   " << a0+a1*pow(nvX(i-1),2)+b0*H(i-1) << std::endl;
+		if(i<=n)H(i)=a0+a1*pow(nvX(i-1),2)+b0*H(i-1);
+		else H(i)=a0+(a1+b0)*H(i-1); //Out of sample predictions
+	}
+  
+	return wrap(H);
+}
+// -------------------------------------------------------------------------------------------------------------------
+
+// --------------------------------- Returns log likelihood for EGARCH model -----------------------------------------
+SEXP LLeGARCH(SEXP X, SEXP H0, SEXP Param) {
+	double dH0 = as<double>(H0);
+	NumericVector nvX(X); NumericVector nvParam(Param);
+	
+	int n = nvX.size();
+	double a0 = nvParam(0); double a1 = nvParam(1);
+	double gamma = nvParam(2); double b0 = nvParam(3);
+  
+	NumericVector logH(n);
+	logH(0) = ::log(dH0);
+	
+	double logL=0;
+  
+	for(int i=1;i<n;i++){
+		logH(i)=a0+a1*(std::abs(nvX(i-1))+gamma*nvX(i-1))/sqrt(::exp(logH(i-1)))+b0*logH(i-1);
+		logL+=logH(i)+pow(nvX(i),2)/::exp(logH(i));		//The correct way is to subtract rather than add 
+	}
+  
+	return wrap(logL);
+}
+
+// -------------------------------- Returns times series of conditional EGARCH variance ---------------------------------
+SEXP HTeGARCH(SEXP X, SEXP H0, SEXP Param, SEXP Nout) {
+	double dH0 = as<double>(H0); double dNout = as<double>(Nout);
+	NumericVector nvX(X); NumericVector nvParam(Param);	
+	
+	int n = nvX.size();
+	double a0 = nvParam(0); double a1 = nvParam(1);
+	double gamma = nvParam(2); double b0 = nvParam(3);
+  
+	NumericVector logH(n+dNout);
+	logH(0) = ::log(dH0);
+	
+	//std::cout << "dH0    " << dH0 << std::endl;
+	//std::cout << "::log(dH0)   " << ::log(dH0)  << std::endl;
+
+	for(int i=1;i<(n+dNout);i++){
+		if(i<=n) logH(i)=a0+a1*(std::abs(nvX(i-1))+gamma*nvX(i-1))/sqrt(::exp(logH(i-1)))+b0*logH(i-1);
+		else logH(i)=a0+a1*sqrt(2/M_PI)+b0*logH(i-1);
+	}
+  
+	return wrap(logH);
+}*/

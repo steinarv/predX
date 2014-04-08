@@ -1,0 +1,11 @@
+Package: predX
+Type: Package
+Title: Performes and evaluates predictions
+Version: 1.0
+Date: 2014-02-13
+Author: Steinar Veka
+Maintainer: Steinar Veka <steinar.veka@gmail.com>
+Description: 
+License: Dont know
+Depends: Rcpp (>= 0.10.3), RcppArmadillo (>= 0.3.800.1), foreach, doSNOW, iterators, snow
+LinkingTo: Rcpp, RcppArmadillo
