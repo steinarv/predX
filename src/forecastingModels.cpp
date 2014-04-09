@@ -200,6 +200,7 @@ SEXP RMSIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
 			
 			}
 		}else{
+			if(i < nvFIL.size() && d < nvS.size())
 			nvFIL(i) = dL*nvS(d);
 		}
 	}
