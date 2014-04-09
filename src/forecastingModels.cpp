@@ -180,7 +180,7 @@ SEXP RMSIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
 	nvFIL(0) = nvX(0);
 
 	for(int i=1;i<(n+f);i++){
-	
+	if(i < nvFIL.size() && d < nvS.size()){
 		d = nvDAYS(i);
 		dVAR = 0.06*pow(nvX(i-1)-nvFIL(i-1), 2)+0.94*dVAR;
 		
@@ -200,10 +200,9 @@ SEXP RMSIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
 			
 			}
 		}else{
-			if(i < nvFIL.size() && d < nvS.size())
 			nvFIL(i) = dL*nvS(d);
 		}
-	}
+	}}
 	
 	return(wrap(nvFIL));
 }
