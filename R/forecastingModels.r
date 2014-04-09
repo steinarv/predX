@@ -44,7 +44,7 @@ filterHS <- function(x, n.ahead=1, ... ){
 #}
 
 INVunityf <- function(x){
-	x <- min(x, 0.9999999999) #Ensure numeric value in return
+	x <- sapply(x, FUN=function(z)min(z,0.9999)) #Ensure numeric value in return
 	log(x/(1-x))
 	}
 
