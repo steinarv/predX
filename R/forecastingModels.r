@@ -250,7 +250,7 @@ OPTrmsimdexsm <- function(x, days, s, param, startVal, scorefunc, return.type="s
 	}
 	
 	if(return.type=="scorefunc")min(matX[,2])
-	else if(retunr.type=="thold.value")matX[which.min(matX[,2]), 1]
+	else if(return.type=="thold.value")matX[which.min(matX[,2]), 1]
 }
 
 rmsimdexsm <- function(x, days, param=NULL, doOptim=TRUE, thold=2, 
