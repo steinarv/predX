@@ -171,6 +171,7 @@ SEXP RMSIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
 	double alfa = nvPARAM(0); double gamma = nvPARAM(1);
+	double thold = nvPARAM(2)*4; //Number of standard deviations for treshold (0 < > 4)
 	
 	NumericVector nvS(s); NumericVector nvFIL(n+f);
 	NumericVector nvSTARTVAL(STARTVAL);
@@ -190,7 +191,8 @@ SEXP RMSIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
 			
 			// If x is more than two standard deviation of filtered value we set it 
 			// equal to filtered value when updating equations
-			if( nvX(i) < (nvFIL(i)-2*sqrt(dVAR)) || nvX(i) > (nvFIL(i)+2*sqrt(dVAR)) ){
+			if( nvX(i) < (nvFIL(i)-thold*sqrt(dVAR)) || 
+							nvX(i) > (nvFIL(i)+thold*sqrt(dVAR)) ){
 				nvX(i) < nvFIL(i) ? xhat = (nvFIL(i)-2*sqrt(dVAR)) : 
 								xhat = (nvFIL(i)+2*sqrt(dVAR));
 								
