@@ -263,11 +263,11 @@ rmsimdexsm <- function(x, days, param=NULL, doOptim=TRUE, thold=2,
 	startVal[3:(s+2)] <- aggregate(x[1:nn], by=list(days[1:nn]), mean)$x/mean(x)
 	
 	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))
-		}else{param <- INVunityf(param)}
+	}else{param <- INVunityf(param)}
 	
 	if(doOptim){
 		opt <- optim(param, OPTrmsimdexsm, x=x, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
-						method=solver.method, control=solver.control)
+				return.type="scorefunc", method=solver.method, control=solver.control)
 		param <- opt$par
 		thold = OPTrmsimdexsm(x=x, days=days[1:n], s=s, startVal=startVal,
 						scorefunc=fMSE, return.type="thold.value")
