@@ -185,8 +185,6 @@ SEXP RMSIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
 		
 		if(i<n){
 			dVAR = 0.06*pow(nvX(i-1)-nvFIL(i-1), 2)+0.94*dVAR;
-			std::cout << "loop start, i = " << i <<
-			" and dVAR = " << dVAR << std::endl;
 			nvFIL(i)=dL*nvS(d); //Predicted/Filtered value for "today"
 			
 			// If x is more than two standard deviation of filtered value we set it 
