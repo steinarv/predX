@@ -269,8 +269,8 @@ rmsimdexsm <- function(x, days, param=NULL, doOptim=TRUE, thold=2,
 		opt <- optim(param, OPTrmsimdexsm, x=x, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
 				return.type="scorefunc", method=solver.method, control=solver.control)
 		param <- opt$par
-		thold = OPTrmsimdexsm(x=x, days=days[1:n], s=s, startVal=startVal,
-						scorefunc=fMSE, return.type="thold.value")
+		thold = OPTrmsimdexsm(x=x, param=param, days=days[1:n], s=s, startVal=startVal,
+					scorefunc=fMSE, return.type="thold.value")
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
