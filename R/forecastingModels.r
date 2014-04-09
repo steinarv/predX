@@ -245,12 +245,14 @@ rmsimdexsm <- function(x, days, param=NULL, doOptim=TRUE, solver.method="Nelder-
 	startVal[1] <- var(x); startVal[2] <- mean(x[1:10]); 
 	startVal[3:(s+2)] <- aggregate(x, by=list(days[1:n]), mean)$x/mean(x)
 		
-	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5, 0))}else{param <- INVunityf(param)}
+	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5, 0.5))
+		}else{param <- INVunityf(param/c(1,1,4))}
+	
 	if(doOptim){
 		opt <- optim(param, OPTrmsimdexsm, x=x, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
 						method=solver.method, control=solver.control)
 		param <- opt$par
-		opt$par <- 1/(1+exp(-opt$par))
+		opt$par <- 1/(1+exp(-opt$par))*c(1,1,4)
 	}
 	
 	fit <- .Call("RMSIMDAYEXPSMOOTH", X=x, DAYS=days, S=s, PARAM=param, STARTVAL=startVal,
