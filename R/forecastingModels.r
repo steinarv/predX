@@ -240,7 +240,8 @@ simdexsm <- function(x, days, param=NULL, doOptim=TRUE, solver.method="Nelder-Me
 # RiskMetric adjusted similar day smoothing without trend, with possible esplanatory variables
 OPTrmsimdexsm <- function(x, days, s, param, startVal, scorefunc){
 	n <- length(x)
-	fitval <- .Call("RMSIMDAYEXPSMOOTH", X=x, DAYS=days, S=s, PARAM=param, STARTVAL=startVal, PACKAGE = "predX")
+	fitval <- .Call("RMSIMDAYEXPSMOOTH", X=x, DAYS=days, S=s, PARAM=param, 
+			THOLD=2, STARTVAL=startVal, PACKAGE = "predX")
 	scorefunc(x[(s*2):n], fitval[(s*2):n])
 }
 
@@ -251,18 +252,18 @@ rmsimdexsm <- function(x, days, param=NULL, doOptim=TRUE, solver.method="Nelder-
 	nn <- min(5*s, n) #Number of days used of initializing seasonal component
 	startVal[3:(s+2)] <- aggregate(x[1:nn], by=list(days[1:nn]), mean)$x/mean(x)
 		
-	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5, 0.5))
-		}else{param <- INVunityf(param/c(1,1,4))}
+	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))
+		}else{param <- INVunityf(param)}
 	
 	if(doOptim){
 		opt <- optim(param, OPTrmsimdexsm, x=x, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
 						method=solver.method, control=solver.control)
 		param <- opt$par
-		opt$par <- 1/(1+exp(-opt$par))*c(1,1,4)
+		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
-	fit <- .Call("RMSIMDAYEXPSMOOTH", X=x, DAYS=days, S=s, PARAM=param, STARTVAL=startVal,
-					PACKAGE = "predX" )
+	fit <- .Call("RMSIMDAYEXPSMOOTH", X=x, DAYS=days, S=s, PARAM=param, 
+			THOLD=2, STARTVAL=startVal, PACKAGE = "predX" )
 	
 	lOut <- list(fitIn=fit[1:n], fitOut=fit[(n+1):(n+nout)])
 	if(doOptim)lOut <- c(lOut, opt)
