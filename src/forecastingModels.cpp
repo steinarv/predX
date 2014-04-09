@@ -167,6 +167,7 @@ SEXP SIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
 SEXP RMSIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
 	NumericVector nvX(X); NumericVector nvDAYS(DAYS); int n = nvX.size(); 
 	int f = nvDAYS.size()-n; int s = as<int>(S); int d = 0;
+	double xhat = 0; // Normalized x when outliers detected
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
 	double alfa = nvPARAM(0); double gamma = nvPARAM(1);
@@ -190,7 +191,10 @@ SEXP RMSIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
 			// If x is more than two standard deviation of filtered value we set it 
 			// equal to filtered value when updating equations
 			if( nvX(i) < (nvFIL(i)-2*sqrt(dVAR)) || nvX(i) > (nvFIL(i)+2*sqrt(dVAR)) ){
-				dL=alfa*nvX(i)/nvS(d)+(1-alfa)*dL; 
+				nvX(i) < nvFIL(i) ? xhat = (nvFIL(i)-2*sqrt(dVAR)) : 
+								xhat = (nvFIL(i)+2*sqrt(dVAR));
+								
+				dL=alfa*xhat/nvS(d)+(1-alfa)*dL; 
 				nvS(d)=gamma*nvX(i)/dL+(1-gamma)*nvS(d); 
 			
 			}else{
