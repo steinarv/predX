@@ -242,8 +242,9 @@ OPTrmsimdexsm <- function(x, days, s, param, startVal, scorefunc){
 rmsimdexsm <- function(x, days, param=NULL, doOptim=TRUE, solver.method="Nelder-Mead", solver.control=list()){
 	n <- length(x); nout <- length(days)-n; s <- length(unique(days))
 	startVal = rep(NA, s+2) #Level0 and Seas1:(s+1)
-	startVal[1] <- var(x); startVal[2] <- mean(x[1:10]); 
-	startVal[3:(s+2)] <- aggregate(x, by=list(days[1:n]), mean)$x/mean(x)
+	startVal[1] <- var(x); startVal[2] <- mean(x[1:10]);
+	nn <- min(5*s, n) #Number of days used of initializing seasonal component
+	startVal[3:(s+2)] <- aggregate(x[1:nn], by=list(days[1:nn]), mean)$x/mean(x)
 		
 	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5, 0.5))
 		}else{param <- INVunityf(param/c(1,1,4))}
