@@ -180,17 +180,19 @@ SEXP RMSIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
 	nvFIL(0) = nvX(0);
 
 	for(int i=1;i<(n+f);i++){
-	if(i < nvFIL.size() && d < nvS.size()){
+	
 		d = nvDAYS(i);
 		dVAR = 0.06*pow(nvX(i-1)-nvFIL(i-1), 2)+0.94*dVAR;
 		
 		if(i<n){
-			std::cout << "loop start, i = " << i << std::endl;
+			std::cout << "loop start, i = " << i <<
+			" and dVAR = " << dVAR << std::endl;
 			nvFIL(i)=dL*nvS(d); //Predicted/Filtered value for "today"
 			
 			// If x is more than two standard deviation of filtered value we set it 
 			// equal to filtered value when updating equations
-			if( nvX(i) < (nvFIL(i)-2*sqrt(dVAR)) || nvX(i) > (nvFIL(i)+2*sqrt(dVAR)) ){
+			if(i>100000){
+			//if( nvX(i) < (nvFIL(i)-2*sqrt(dVAR)) || nvX(i) > (nvFIL(i)+2*sqrt(dVAR)) ){
 				dL=alfa*nvX(i)/nvS(d)+(1-alfa)*dL; 
 				nvS(d)=gamma*nvX(i)/dL+(1-gamma)*nvS(d); 
 			
@@ -202,7 +204,7 @@ SEXP RMSIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
 		}else{
 			nvFIL(i) = dL*nvS(d);
 		}
-	}}
+	}
 	
 	return(wrap(nvFIL));
 }
