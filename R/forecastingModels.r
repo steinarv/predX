@@ -238,20 +238,30 @@ simdexsm <- function(x, days, param=NULL, doOptim=TRUE, solver.method="Nelder-Me
 
 
 # RiskMetric adjusted similar day smoothing without trend, with possible esplanatory variables
-OPTrmsimdexsm <- function(x, days, s, param, startVal, scorefunc){
+OPTrmsimdexsm <- function(x, days, s, param, startVal, scorefunc, return.type="scorefunc"){
 	n <- length(x)
-	fitval <- .Call("RMSIMDAYEXPSMOOTH", X=x, DAYS=days, S=s, PARAM=param, 
-			THOLD=2, STARTVAL=startVal, PACKAGE = "predX")
-	scorefunc(x[(s*2):n], fitval[(s*2):n])
+	matX <- cbind(seq(from=2, to=4, by=0.2), NA)
+	
+	for(i in 1:nrow(matX)){
+		thold <- matX[i, 1]
+		fitval <- .Call("RMSIMDAYEXPSMOOTH", X=x, DAYS=days, S=s, PARAM=param, 
+				THOLD=thold, STARTVAL=startVal, PACKAGE = "predX")
+		matX[i, 2] <- scorefunc(x[(s*2):n], fitval[(s*2):n])
+	}
+	
+	if(return.type=="scorefunc")min(matX[,2])
+	else if(retunr.type=="thold.value")matX[which.min(matX[,2]), 1]
 }
 
-rmsimdexsm <- function(x, days, param=NULL, doOptim=TRUE, solver.method="Nelder-Mead", solver.control=list()){
+rmsimdexsm <- function(x, days, param=NULL, doOptim=TRUE, thold=2, 
+			solver.method="Nelder-Mead", solver.control=list()){
+			
 	n <- length(x); nout <- length(days)-n; s <- length(unique(days))
 	startVal = rep(NA, s+2) #Level0 and Seas1:(s+1)
 	startVal[1] <- var(x); startVal[2] <- mean(x[1:10]);
 	nn <- min(5*s, n) #Number of days used of initializing seasonal component
 	startVal[3:(s+2)] <- aggregate(x[1:nn], by=list(days[1:nn]), mean)$x/mean(x)
-		
+	
 	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))
 		}else{param <- INVunityf(param)}
 	
@@ -259,14 +269,16 @@ rmsimdexsm <- function(x, days, param=NULL, doOptim=TRUE, solver.method="Nelder-
 		opt <- optim(param, OPTrmsimdexsm, x=x, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
 						method=solver.method, control=solver.control)
 		param <- opt$par
+		thold = OPTrmsimdexsm(x=x, days=days[1:n], s=s, startVal=startVal,
+						scorefunc=fMSE, return.type="thold.value")
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
 	fit <- .Call("RMSIMDAYEXPSMOOTH", X=x, DAYS=days, S=s, PARAM=param, 
-			THOLD=2, STARTVAL=startVal, PACKAGE = "predX" )
+			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX" )
 	
 	lOut <- list(fitIn=fit[1:n], fitOut=fit[(n+1):(n+nout)])
-	if(doOptim)lOut <- c(lOut, opt)
+	if(doOptim)lOut <- c(lOut, opt, list(thold=thold))
 	
 	lOut
 
