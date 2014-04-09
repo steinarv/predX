@@ -43,7 +43,10 @@ filterHS <- function(x, n.ahead=1, ... ){
 #	.Call("HTeGARCH", x, var(x), c( log(var(x))*0.25-0.016, 0.02, 0, 0.75 ), 1, PACKAGE = "predX" )
 #}
 
-INVunityf <- function(x)log(x/(1-x))
+INVunityf <- function(x){
+	x <- min(x, 0.9999999999) #Ensure numeric value in return
+	log(x/(1-x))
+	}
 
 fMSE <- function(y,x)mean((y-x)^2)
 
