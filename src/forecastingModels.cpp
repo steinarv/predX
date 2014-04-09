@@ -164,14 +164,14 @@ SEXP SIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
 
 
 // ------------------------------ robust simelar day Holt Winters model -----------------------------------------------
-SEXP RMSIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
+SEXP RMSIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP THOLD, SEXP STARTVAL) {
 	NumericVector nvX(X); NumericVector nvDAYS(DAYS); int n = nvX.size(); 
 	int f = nvDAYS.size()-n; int s = as<int>(S); int d = 0;
 	double xhat = 0; // Normalized x when outliers detected
+	double thold = as<double>(THOLD); //Number of standard deviations for treshold (0 < > 4)
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
 	double alfa = nvPARAM(0); double gamma = nvPARAM(1);
-	double thold = nvPARAM(2)*4; //Number of standard deviations for treshold (0 < > 4)
 	
 	NumericVector nvS(s); NumericVector nvFIL(n+f);
 	NumericVector nvSTARTVAL(STARTVAL);
