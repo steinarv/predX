@@ -287,6 +287,71 @@ rmsimdexsm <- function(y, days, param=NULL, doOptim=TRUE, thold=2,
 
 }
 
+###############################################################################################
+# RiskMetric adjusted similar day smoothing without trend, with possible esplanatory variables#
+###############################################################################################
+OPTrmsimdregexsm <- function(y, X, days, s, thold, param, startVal, scorefunc){
+	n <- length(y)
+	ind <- (s*2):n
+	
+	fitval <- .Call("RMSIMDAYEXPSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, 
+			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX")
+	
+	
+	lmfit <- lm(y[ind]~fitval[ind]+X[ind, ])
+	scorefunc(y[ind], lmfit$fitted.values)
+}
+
+rmsimdregexsm <- function(y, X, days, param=NULL, doOptim=TRUE, thold=2, 
+			solver.method="Nelder-Mead", solver.control=list()){
+			
+	n <- length(y); nout <- length(days)-n; s <- length(unique(days))
+	if(nrow(X)!=(n+nout))stop("Provide a matrix with explanatory variables and number of rows 
+				equal to length days")
+	
+	startVal = rep(NA, s+2) #Level0 and Seas1:(s+1)
+	startVal[1] <- var(y); startVal[2] <- mean(y[1:10]);
+	nn <- min(5*s, n) #Number of days used of initializing seasonal component
+	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y)
+	
+	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))
+	}else{param <- INVunityf(param)}
+	
+	if(doOptim){
+	if(is.null(thold)){
+		
+		opt <- list(value=Inf)
+		for(i in seq(from=2, to=4, by=0.2)){
+		newopt <- optim(param, OPTrmsimdregexsm, y=y, X=X[1:n, ], days=days[1:n], s=s, 
+				startVal=startVal, scorefunc=fMSE, thold=i, method=solver.method, 
+				control=solver.control)
+		if(newopt$value < opt$value){opt <- newopt; thold <- i}
+		}
+	
+	}else{
+		opt <- optim(param, OPTrmsimdregexsm, y=y, X=X[1:n, ], days=days[1:n], s=s, 
+				startVal=startVal, scorefunc=fMSE, thold=thold, method=solver.method,
+				control=solver.control)
+	}
+		param <- opt$par
+		opt$par <- 1/(1+exp(-opt$par))
+	}
+	
+	# Filter data and predict nout days ahead
+	filterfit <- .Call("RMSIMDAYEXPSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, 
+			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX" )
+	# Linear regression with filtered values and X matrix as explanatory variables
+	lmfit <- lm(y[ind]~filterfit[ind]+X[ind,])
+	# Fitted values
+	fit <- cbind(1, filterfit, X)%*%matrix(coef(lmfit), ncol=1)
+	
+	lOut <- list(fitIn=fit[1:n, 1], lmfit=lmfit)
+	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))
+	if(doOptim)lOut <- c(lOut, opt, list(thold=thold))
+	
+	lOut
+
+}
 
 
 
