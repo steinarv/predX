@@ -50,24 +50,24 @@ INVunityf <- function(x){
 
 fMSE <- function(y,x)mean((y-x)^2)
 
-OPTexsm1 <- function(x, param, startVal, scorefunc=fMSE){
-	n <- length(x)
-	fitval <- .Call("EXPSMOOTH1", X=x, PARAM=param, STARTVAL=startVal, NOUT=1, PACKAGE = "predX")
-	scorefunc(x[10:n], fitval[10:n])
+OPTexsm1 <- function(y, param, startVal, scorefunc=fMSE){
+	n <- length(y)
+	fitval <- .Call("EXPSMOOTH1", Y=y, PARAM=param, STARTVAL=startVal, NOUT=1, PACKAGE = "predX")
+	scorefunc(y[10:n], fitval[10:n])
 }
 
-exsm1 <- function(x, param=NULL, doOptim=TRUE, nout=1, scorefunc=fMSE, solver.method="Brent", solver.control=list()){
+exsm1 <- function(y, param=NULL, doOptim=TRUE, nout=1, scorefunc=fMSE, solver.method="Brent", solver.control=list()){
 	
-	n <- length(x)
+	n <- length(y)
 	if(is.null(param)){param <- 0.5}else{param <- param}
 	if(doOptim){
-		opt <- optim(param, OPTexsm1, x=x, scorefunc=scorefunc, lower=0, upper=1, 
-						startVal=mean(x), method=solver.method, control=solver.control)
+		opt <- optim(param, OPTexsm1, y=y, scorefunc=scorefunc, lower=0, upper=1, 
+						startVal=mean(y), method=solver.method, control=solver.control)
 		param <- opt$par
 		names(opt$par) <- "lambda"
 	}
 	
-	fit <- .Call("EXPSMOOTH1", X=x, PARAM=param, STARTVAL=mean(x), NOUT=nout, PACKAGE = "predX")
+	fit <- .Call("EXPSMOOTH1", Y=y, PARAM=param, STARTVAL=mean(y), NOUT=nout, PACKAGE = "predX")
 
 	lOut <- list(fitIn=fit[1:n], fitOut=fit[(n+1):(n+nout)])
 	if(doOptim)lOut <- c(lOut, opt)
@@ -75,26 +75,26 @@ exsm1 <- function(x, param=NULL, doOptim=TRUE, nout=1, scorefunc=fMSE, solver.me
 	lOut
 }
 
-OPTexsm2 <- function(x, param, thold, startVal, scorefunc=fMSE){
-	n <- length(x)
+OPTexsm2 <- function(y, param, thold, startVal, scorefunc=fMSE){
+	n <- length(y)
 	# Order of arguments given to .Call function does matter!!
-	fitval <- .Call("EXPSMOOTH2", X=x, LAMBA=param, THOLD=thold, STARTVAL=startVal, NOUT=1, PACKAGE = "predX")
-	scorefunc(x[2:n], fitval[1:(n-1)])
+	fitval <- .Call("EXPSMOOTH2", Y=y, LAMBA=param, THOLD=thold, STARTVAL=startVal, NOUT=1, PACKAGE = "predX")
+	scorefunc(y[2:n], fitval[1:(n-1)])
 }
 
-exsm2 <- function(x, param=NULL, thold=NULL, doOptim=TRUE, nout=1, scorefunc=fMSE, solver.method="Brent", solver.control=list()){
+exsm2 <- function(y, param=NULL, thold=NULL, doOptim=TRUE, nout=1, scorefunc=fMSE, solver.method="Brent", solver.control=list()){
 	
-	n <- length(x)
+	n <- length(y)
 	if(is.null(param)){param <- 0.5}else{param <- param}
-	if(is.null(thold)){thold <- rep(sd(x)*3,n)}
+	if(is.null(thold)){thold <- rep(sd(y)*3,n)}
 	if(doOptim){
-		opt <- optim(param, OPTexsm2, x=x, startVal=mean(x), scorefunc=scorefunc, 
+		opt <- optim(param, OPTexsm2, y=y, startVal=mean(y), scorefunc=scorefunc, 
 						thold=thold, lower=0, upper=1, 
 						method=solver.method, control=solver.control)
 		param <- opt$par
 	}
 	
-	fit <- .Call("EXPSMOOTH2", X=x, PARAM=param, THOLD=thold, STARTVAL=mean(x), NOUT=nout, PACKAGE = "predX")
+	fit <- .Call("EXPSMOOTH2", Y=y, PARAM=param, THOLD=thold, STARTVAL=mean(y), NOUT=nout, PACKAGE = "predX")
 
 	lOut <- list(fitIn=fit[1:n], fitOut=fit[(n+1):(n+nout)])
 	if(doOptim)lOut <- c(lOut, opt)
@@ -103,23 +103,23 @@ exsm2 <- function(x, param=NULL, thold=NULL, doOptim=TRUE, nout=1, scorefunc=fMS
 }
 
 
-OPTexsm3 <- function(x, param, startVal, scorefunc){
-	n <- length(x)
-	fitval <- .Call("EXPSMOOTH3", X=x, PARAM=param, STARTVAL=startVal, NOUT=1, PACKAGE = "predX" )
-	scorefunc(x[10:n], fitval[10:n])
+OPTexsm3 <- function(y, param, startVal, scorefunc){
+	n <- length(y)
+	fitval <- .Call("EXPSMOOTH3", Y=y, PARAM=param, STARTVAL=startVal, NOUT=1, PACKAGE = "predX" )
+	scorefunc(y[10:n], fitval[10:n])
 }
 
-exsm3 <- function(x, param=NULL, doOptim=TRUE, nout=1, solver.method="Nelder-Mead", solver.control=list()){
-	n <- length(x)
+exsm3 <- function(y, param=NULL, doOptim=TRUE, nout=1, solver.method="Nelder-Mead", solver.control=list()){
+	n <- length(y)
 	if(is.null(param)){param <-  INVunityf(c(0.5,0.5))}else{param <- INVunityf(param)}
 	if(doOptim){
-		opt <- optim(param, OPTexsm3, x=x, startVal=c(mean(x), 0, x[1]), scorefunc=fMSE,
+		opt <- optim(param, OPTexsm3, y=y, startVal=c(mean(y), 0, y[1]), scorefunc=fMSE,
 						method=solver.method, control=solver.control)
 		param <- opt$par
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
-	fit <- .Call("EXPSMOOTH3", X=x, PARAM=param, STARTVAL=c(mean(x), 0, x[1]),
+	fit <- .Call("EXPSMOOTH3", Y=y, PARAM=param, STARTVAL=c(mean(y), 0, y[1]),
 					NOUT=nout, PACKAGE = "predX" )
 	
 	lOut <- list(fitIn=fit[1:n], fitOut=fit[(n+1):(n+nout)])
@@ -129,27 +129,27 @@ exsm3 <- function(x, param=NULL, doOptim=TRUE, nout=1, solver.method="Nelder-Mea
 }
 
 # Seasonal smoothing without trend, with possible esplanatory variables
-OPTseasexsm <- function(x, s, param, startVal, scorefunc){
-	n <- length(x)
-	fitval <- .Call("SEASEXPSMOOTH", X=x, S=s, PARAM=param, STARTVAL=startVal, NOUT=1, PACKAGE = "predX")
-	scorefunc(x[(s*2):n], fitval[(s*2):n])
+OPTseasexsm <- function(y, s, param, startVal, scorefunc){
+	n <- length(y)
+	fitval <- .Call("SEASEXPSMOOTH", Y=y, S=s, PARAM=param, STARTVAL=startVal, NOUT=1, PACKAGE = "predX")
+	scorefunc(y[(s*2):n], fitval[(s*2):n])
 }
 
-seasexsm <- function(x, s, param=NULL, doOptim=TRUE, nout=1, solver.method="Nelder-Mead", solver.control=list()){
-	n <- length(x)
+seasexsm <- function(y, s, param=NULL, doOptim=TRUE, nout=1, solver.method="Nelder-Mead", solver.control=list()){
+	n <- length(y)
 	startVal = rep(NA, s+2) #Level0 and Seas1:(s+1)
-	startVal[1] <- mean(x[1:10]); startVal[2:(s+1)] <- aggregate(x, by=list(rep_len(1:s,n)), mean)$x/mean(x)
+	startVal[1] <- mean(y[1:10]); startVal[2:(s+1)] <- aggregate(y, by=list(rep_len(1:s,n)), mean)$y/mean(y)
 	startVal[s+2] <- startVal[2]
 	
 	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))}else{param <- INVunityf(param)}
 	if(doOptim){
-		opt <- optim(param, OPTseasexsm, x=x, s=s, startVal=startVal, scorefunc=fMSE,
+		opt <- optim(param, OPTseasexsm, y=y, s=s, startVal=startVal, scorefunc=fMSE,
 						method=solver.method, control=solver.control)
 		param <- opt$par
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
-	fit <- .Call("SEASEXPSMOOTH", X=x, S=s, PARAM=param, STARTVAL=startVal,
+	fit <- .Call("SEASEXPSMOOTH", Y=y, S=s, PARAM=param, STARTVAL=startVal,
 					NOUT=nout, PACKAGE = "predX" )
 	
 	lOut <- list(fitIn=fit[1:n], fitOut=fit[(n+1):(n+nout)])
@@ -159,18 +159,18 @@ seasexsm <- function(x, s, param=NULL, doOptim=TRUE, nout=1, solver.method="Neld
 
 }
 
-OPTseasregexsm <- function(x, s, X, param, startVal, scorefunc){
-	n <- length(x); ind <- (s*2):n
-	fitval <- .Call("SEASEXPSMOOTH", X=x, S=s, PARAM=param, STARTVAL=startVal, NOUT=0, PACKAGE = "predX")
-	lmfit <- lm(x[ind]~fitval[ind]+X[ind, ])
-	scorefunc(x[ind], lmfit$fitted.values)
+OPTseasregexsm <- function(y, s, X, param, startVal, scorefunc){
+	n <- length(y); ind <- (s*2):n
+	fitval <- .Call("SEASEXPSMOOTH", Y=y, S=s, PARAM=param, STARTVAL=startVal, NOUT=0, PACKAGE = "predX")
+	lmfit <- lm(y[ind]~fitval[ind]+X[ind, ])
+	scorefunc(y[ind], lmfit$fitted.values)
 }
 
-seasregexsm <- function(x, s, X, param=NULL, doOptim=TRUE, nout=0, Xout=NULL, solver.method="Nelder-Mead", solver.control=list()){
-	n <- length(x)
-	if(nrow(X)!=n)stop("Provide a matrix with explanatory variables and number of rows equal to length x")
+seasregexsm <- function(y, s, X, param=NULL, doOptim=TRUE, nout=0, Xout=NULL, solver.method="Nelder-Mead", solver.control=list()){
+	n <- length(y)
+	if(nrow(X)!=n)stop("Provide a matrix with explanatory variables and number of rows equal to length y")
 	startVal = rep(NA, s+2) #Level0 and Seas1:(s+1)
-	startVal[1] <- mean(x[1:10]); startVal[2:(s+1)] <- aggregate(x, by=list(rep_len(1:s,n)), mean)$x/mean(x)
+	startVal[1] <- mean(y[1:10]); startVal[2:(s+1)] <- aggregate(y, by=list(rep_len(1:s,n)), mean)$y/mean(y)
 	startVal[s+2] <- startVal[2]
 	
 	if(!is.null(Xout))
@@ -179,7 +179,7 @@ seasregexsm <- function(x, s, X, param=NULL, doOptim=TRUE, nout=0, Xout=NULL, so
 	
 	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))}else{param <- INVunityf(param)}
 	if(doOptim){
-		opt <- optim(param, OPTseasregexsm, x=x, s=s, X=X, startVal=startVal, scorefunc=fMSE,
+		opt <- optim(param, OPTseasregexsm, y=y, s=s, X=X, startVal=startVal, scorefunc=fMSE,
 						method=solver.method, control=solver.control)
 		param <- opt$par
 		opt$par <- 1/(1+exp(-opt$par))
@@ -188,9 +188,9 @@ seasregexsm <- function(x, s, X, param=NULL, doOptim=TRUE, nout=0, Xout=NULL, so
 	
 	
 	ind <- (s*2):n
-	filterfit <- .Call("SEASEXPSMOOTH", X=x, S=s, PARAM=param, STARTVAL=startVal,
+	filterfit <- .Call("SEASEXPSMOOTH", Y=y, S=s, PARAM=param, STARTVAL=startVal,
 						NOUT=nout, PACKAGE = "predX" )
-	lmfit <- lm(x[ind]~filterfit[ind]+X[ind,])
+	lmfit <- lm(y[ind]~filterfit[ind]+X[ind,])
 	
 	fit <- cbind(1, filterfit, rbind(X,Xout))%*%matrix(coef(lmfit), ncol=1)
 	
@@ -205,28 +205,28 @@ seasregexsm <- function(x, s, X, param=NULL, doOptim=TRUE, nout=0, Xout=NULL, so
 
 
 # Similar day smoothing without trend, with possible esplanatory variables
-OPTsimdexsm <- function(x, days, s, param, startVal, scorefunc){
-	n <- length(x)
-	fitval <- .Call("SIMDAYEXPSMOOTH", X=x, DAYS=days, S=s, PARAM=param, STARTVAL=startVal, PACKAGE = "predX")
-	scorefunc(x[(s*2):n], fitval[(s*2):n])
+OPTsimdexsm <- function(y, days, s, param, startVal, scorefunc){
+	n <- length(y)
+	fitval <- .Call("SIMDAYEXPSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, STARTVAL=startVal, PACKAGE = "predX")
+	scorefunc(y[(s*2):n], fitval[(s*2):n])
 }
 
-simdexsm <- function(x, days, param=NULL, doOptim=TRUE, solver.method="Nelder-Mead", solver.control=list()){
-	n <- length(x); nout <- length(days)-n; s <- length(unique(days))
+simdexsm <- function(y, days, param=NULL, doOptim=TRUE, solver.method="Nelder-Mead", solver.control=list()){
+	n <- length(y); nout <- length(days)-n; s <- length(unique(days))
 	startVal = rep(NA, s+1) #Level0 and Seas1:(s+1)
-	startVal[1] <- mean(x[1:10])
+	startVal[1] <- mean(y[1:10])
 	nn <- min(5*s, n) #Number of days used of initializing seasonal component
-	startVal[2:(s+1)] <- aggregate(x[1:nn], by=list(days[1:nn]), mean)$x/mean(x)
+	startVal[2:(s+1)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$y/mean(y)
 		
 	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))}else{param <- INVunityf(param)}
 	if(doOptim){
-		opt <- optim(param, OPTsimdexsm, x=x, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
+		opt <- optim(param, OPTsimdexsm, y=y, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
 						method=solver.method, control=solver.control)
 		param <- opt$par
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
-	fit <- .Call("SIMDAYEXPSMOOTH", X=x, DAYS=days, S=s, PARAM=param, STARTVAL=startVal,
+	fit <- .Call("SIMDAYEXPSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, STARTVAL=startVal,
 					PACKAGE = "predX" )
 	
 	lOut <- list(fitIn=fit[1:n], fitOut=fit[(n+1):(n+nout)])
@@ -238,23 +238,23 @@ simdexsm <- function(x, days, param=NULL, doOptim=TRUE, solver.method="Nelder-Me
 
 
 # RiskMetric adjusted similar day smoothing without trend, with possible esplanatory variables
-OPTrmsimdexsm <- function(x, days, s, thold, param, startVal, scorefunc){
-	n <- length(x)
+OPTrmsimdexsm <- function(y, days, s, thold, param, startVal, scorefunc){
+	n <- length(y)
 
-	fitval <- .Call("RMSIMDAYEXPSMOOTH", X=x, DAYS=days, S=s, PARAM=param, 
+	fitval <- .Call("RMSIMDAYEXPSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, 
 			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX")
-	scorefunc(x[(s*2):n], fitval[(s*2):n])
+	scorefunc(y[(s*2):n], fitval[(s*2):n])
 
 }
 
-rmsimdexsm <- function(x, days, param=NULL, doOptim=TRUE, thold=2, 
+rmsimdexsm <- function(y, days, param=NULL, doOptim=TRUE, thold=2, 
 			solver.method="Nelder-Mead", solver.control=list()){
 			
-	n <- length(x); nout <- length(days)-n; s <- length(unique(days))
+	n <- length(y); nout <- length(days)-n; s <- length(unique(days))
 	startVal = rep(NA, s+2) #Level0 and Seas1:(s+1)
-	startVal[1] <- var(x); startVal[2] <- mean(x[1:10]);
+	startVal[1] <- var(y); startVal[2] <- mean(y[1:10]);
 	nn <- min(5*s, n) #Number of days used of initializing seasonal component
-	startVal[3:(s+2)] <- aggregate(x[1:nn], by=list(days[1:nn]), mean)$x/mean(x)
+	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$y/mean(y)
 	
 	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))
 	}else{param <- INVunityf(param)}
@@ -264,20 +264,20 @@ rmsimdexsm <- function(x, days, param=NULL, doOptim=TRUE, thold=2,
 		
 		opt <- list(value=Inf)
 		for(i in seq(from=2, to=4, by=0.2)){
-		newopt <- optim(param, OPTrmsimdexsm, x=x, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
+		newopt <- optim(param, OPTrmsimdexsm, y=y, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
 				thold=i, method=solver.method, control=solver.control)
 		if(newopt$value < opt$value){opt <- newopt; thold <- i}
 		}
 	
 	}else{
-		opt <- optim(param, OPTrmsimdexsm, x=x, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
+		opt <- optim(param, OPTrmsimdexsm, y=y, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
 				thold=thold, method=solver.method, control=solver.control)
 	}
 		param <- opt$par
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
-	fit <- .Call("RMSIMDAYEXPSMOOTH", X=x, DAYS=days, S=s, PARAM=param, 
+	fit <- .Call("RMSIMDAYEXPSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, 
 			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX" )
 	
 	lOut <- list(fitIn=fit[1:n], fitOut=fit[(n+1):(n+nout)])
