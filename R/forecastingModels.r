@@ -238,19 +238,13 @@ simdexsm <- function(x, days, param=NULL, doOptim=TRUE, solver.method="Nelder-Me
 
 
 # RiskMetric adjusted similar day smoothing without trend, with possible esplanatory variables
-OPTrmsimdexsm <- function(x, days, s, param, startVal, scorefunc, return.type="scorefunc"){
+OPTrmsimdexsm <- function(x, days, s, thold, param, startVal, scorefunc){
 	n <- length(x)
-	matX <- cbind(seq(from=2, to=4, by=0.2), NA)
-	
-	for(i in 1:nrow(matX)){
-		thold <- matX[i, 1]
-		fitval <- .Call("RMSIMDAYEXPSMOOTH", X=x, DAYS=days, S=s, PARAM=param, 
-				THOLD=thold, STARTVAL=startVal, PACKAGE = "predX")
-		matX[i, 2] <- scorefunc(x[(s*2):n], fitval[(s*2):n])
-	}
-	
-	if(return.type=="scorefunc")min(matX[,2])
-	else if(return.type=="thold.value")matX[which.min(matX[,2]), 1]
+
+	fitval <- .Call("RMSIMDAYEXPSMOOTH", X=x, DAYS=days, S=s, PARAM=param, 
+			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX")
+	scorefunc(x[(s*2):n], fitval[(s*2):n])
+
 }
 
 rmsimdexsm <- function(x, days, param=NULL, doOptim=TRUE, thold=2, 
@@ -267,10 +261,8 @@ rmsimdexsm <- function(x, days, param=NULL, doOptim=TRUE, thold=2,
 	
 	if(doOptim){
 		opt <- optim(param, OPTrmsimdexsm, x=x, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
-				return.type="scorefunc", method=solver.method, control=solver.control)
+				thold=thold, method=solver.method, control=solver.control)
 		param <- opt$par
-		thold = OPTrmsimdexsm(x=x, param=param, days=days[1:n], s=s, startVal=startVal,
-					scorefunc=fMSE, return.type="thold.value")
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
