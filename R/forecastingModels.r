@@ -290,6 +290,9 @@ rmsimdexsm <- function(y, days, param=NULL, doOptim=TRUE, thold=2,
 ###############################################################################################
 # RiskMetric adjusted similar day smoothing without trend, with possible esplanatory variables#
 ###############################################################################################
+
+#For regression with intercept include a columns of ones in X
+
 OPTrmsimdregexsm <- function(y, X, days, s, thold, param, startVal, scorefunc){
 	n <- length(y)
 	ind <- (s*2):n
@@ -298,7 +301,7 @@ OPTrmsimdregexsm <- function(y, X, days, s, thold, param, startVal, scorefunc){
 			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX")
 	
 	
-	lmfit <- lm(y[ind]~fitval[ind]+X[ind, ])
+	lmfit <- lm(y[ind]~fitval[ind]+X[ind, ]-1)
 	scorefunc(y[ind], lmfit$fitted.values)
 }
 
@@ -344,9 +347,9 @@ rmsimdregexsm <- function(y, X, days, param=NULL, doOptim=TRUE, thold=2,
 	filterfit <- .Call("RMSIMDAYEXPSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, 
 			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX" )
 	# Linear regression with filtered values and X matrix as explanatory variables
-	lmfit <- lm(y[ind]~filterfit[ind]+X[ind, , drop=FALSE])
+	lmfit <- lm(y[ind]~filterfit[ind]+X[ind, , drop=FALSE]-1)
 	# Fitted values
-	fit <- cbind(1, filterfit, X)%*%matrix(coef(lmfit), ncol=1)
+	fit <- cbind(filterfit, X)%*%matrix(coef(lmfit), ncol=1)
 	
 	lOut <- list(fitIn=fit[1:n, 1], lmfit=lmfit)
 	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))
