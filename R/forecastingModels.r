@@ -138,7 +138,7 @@ OPTseasexsm <- function(y, s, param, startVal, scorefunc){
 seasexsm <- function(y, s, param=NULL, doOptim=TRUE, nout=1, solver.method="Nelder-Mead", solver.control=list()){
 	n <- length(y)
 	startVal = rep(NA, s+2) #Level0 and Seas1:(s+1)
-	startVal[1] <- mean(y[1:10]); startVal[2:(s+1)] <- aggregate(y, by=list(rep_len(1:s,n)), mean)$y/mean(y)
+	startVal[1] <- mean(y[1:10]); startVal[2:(s+1)] <- aggregate(y, by=list(rep_len(1:s,n)), mean)$x/mean(y)
 	startVal[s+2] <- startVal[2]
 	
 	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))}else{param <- INVunityf(param)}
@@ -170,7 +170,7 @@ seasregexsm <- function(y, s, X, param=NULL, doOptim=TRUE, nout=0, Xout=NULL, so
 	n <- length(y)
 	if(nrow(X)!=n)stop("Provide a matrix with explanatory variables and number of rows equal to length y")
 	startVal = rep(NA, s+2) #Level0 and Seas1:(s+1)
-	startVal[1] <- mean(y[1:10]); startVal[2:(s+1)] <- aggregate(y, by=list(rep_len(1:s,n)), mean)$y/mean(y)
+	startVal[1] <- mean(y[1:10]); startVal[2:(s+1)] <- aggregate(y, by=list(rep_len(1:s,n)), mean)$x/mean(y)
 	startVal[s+2] <- startVal[2]
 	
 	if(!is.null(Xout))
@@ -216,7 +216,7 @@ simdexsm <- function(y, days, param=NULL, doOptim=TRUE, solver.method="Nelder-Me
 	startVal = rep(NA, s+1) #Level0 and Seas1:(s+1)
 	startVal[1] <- mean(y[1:10])
 	nn <- min(5*s, n) #Number of days used of initializing seasonal component
-	startVal[2:(s+1)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$y/mean(y)
+	startVal[2:(s+1)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y)
 		
 	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))}else{param <- INVunityf(param)}
 	if(doOptim){
@@ -254,7 +254,7 @@ rmsimdexsm <- function(y, days, param=NULL, doOptim=TRUE, thold=2,
 	startVal = rep(NA, s+2) #Level0 and Seas1:(s+1)
 	startVal[1] <- var(y); startVal[2] <- mean(y[1:10]);
 	nn <- min(5*s, n) #Number of days used of initializing seasonal component
-	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$y/mean(y)
+	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y)
 	
 	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))
 	}else{param <- INVunityf(param)}
