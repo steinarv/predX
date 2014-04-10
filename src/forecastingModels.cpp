@@ -11,8 +11,8 @@ void unityFunc(NumericVector &y){
 
 
 // ---------------------------- Exponential smoothing 1 --------------------------------------------------------------
-SEXP EXPSMOOTH1(SEXP X, SEXP PARAM, SEXP STARTVAL, SEXP NOUT){
-	NumericVector nvX(X); int n=nvX.size();
+SEXP EXPSMOOTH1(SEXP Y, SEXP PARAM, SEXP STARTVAL, SEXP NOUT){
+	NumericVector nvX(Y); int n=nvX.size();
 	int f=as<int>(NOUT); NumericVector nvFIL(n+f); //f = number of forecasts to be returned
 	
 	double dLAMBDA=as<double>(PARAM);
@@ -32,8 +32,8 @@ SEXP EXPSMOOTH1(SEXP X, SEXP PARAM, SEXP STARTVAL, SEXP NOUT){
 }
 
 // ---------------------------- Exponential smoothing 2 --------------------------------------------------------------
-SEXP EXPSMOOTH2(SEXP X, SEXP PARAM, SEXP THOLD, SEXP STARTVAL, SEXP NOUT){
-	NumericVector nvX(X); int n=nvX.size();
+SEXP EXPSMOOTH2(SEXP Y, SEXP PARAM, SEXP THOLD, SEXP STARTVAL, SEXP NOUT){
+	NumericVector nvX(Y); int n=nvX.size();
 	int f=as<int>(NOUT); NumericVector nvFIL(n+f); //f = number of forecasts to be returned
 	
 	NumericVector nvTHOLD(THOLD);
@@ -76,8 +76,8 @@ SEXP EXPSMOOTH2(SEXP X, SEXP PARAM, SEXP THOLD, SEXP STARTVAL, SEXP NOUT){
 }
 
 // ---------------------------- Holt Winters model 1 -----------------------------------------------------------------
-SEXP EXPSMOOTH3(SEXP X, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
-	NumericVector nvX(X); int n = nvX.size(); int f = as<int>(NOUT);
+SEXP EXPSMOOTH3(SEXP Y, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
+	NumericVector nvX(Y); int n = nvX.size(); int f = as<int>(NOUT);
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
 	double alfa = nvPARAM(0); double beta = nvPARAM(1);
@@ -103,8 +103,8 @@ SEXP EXPSMOOTH3(SEXP X, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
 
 
 // ---------------------------- simple seasonal Holt Winters model ---------------------------------------------------
-SEXP SEASEXPSMOOTH(SEXP X, SEXP S, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
-	NumericVector nvX(X); int n = nvX.size(); int f = as<int>(NOUT);
+SEXP SEASEXPSMOOTH(SEXP Y, SEXP S, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
+	NumericVector nvX(Y); int n = nvX.size(); int f = as<int>(NOUT);
 	int s = as<int>(S);
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
@@ -132,8 +132,8 @@ SEXP SEASEXPSMOOTH(SEXP X, SEXP S, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
 // -------------------------------------------------------------------------------------------------------------------
 
 // ------------------------------ simelar day Holt Winters model -----------------------------------------------------
-SEXP SIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
-	NumericVector nvX(X); NumericVector nvDAYS(DAYS); int n = nvX.size(); 
+SEXP SIMDAYEXPSMOOTH(SEXP Y, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
+	NumericVector nvX(Y); NumericVector nvDAYS(DAYS); int n = nvX.size(); 
 	int f = nvDAYS.size()-n; int s = as<int>(S); int d = 0;
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
@@ -164,8 +164,8 @@ SEXP SIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP STARTVAL) {
 
 
 // ------------------------------ robust simelar day Holt Winters model -----------------------------------------------
-SEXP RMSIMDAYEXPSMOOTH(SEXP X, SEXP DAYS, SEXP S, SEXP PARAM, SEXP THOLD, SEXP STARTVAL) {
-	NumericVector nvX(X); NumericVector nvDAYS(DAYS); int n = nvX.size(); 
+SEXP RMSIMDAYEXPSMOOTH(SEXP Y, SEXP DAYS, SEXP S, SEXP PARAM, SEXP THOLD, SEXP STARTVAL) {
+	NumericVector nvX(Y); NumericVector nvDAYS(DAYS); int n = nvX.size(); 
 	int f = nvDAYS.size()-n; int s = as<int>(S); int d = 0;
 	double xhat = 0; // Normalized x when outliers detected
 	double thold = as<double>(THOLD); //Number of standard deviations for treshold (0 < > 4)
