@@ -260,8 +260,19 @@ rmsimdexsm <- function(x, days, param=NULL, doOptim=TRUE, thold=2,
 	}else{param <- INVunityf(param)}
 	
 	if(doOptim){
+	if(is.null(thold)){
+		
+		opt <- list(value=Inf)
+		for(i in seq(from=2, to=4, by=0.2)){
+		newopt <- optim(param, OPTrmsimdexsm, x=x, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
+				thold=i, method=solver.method, control=solver.control)
+		if(newopt$value < opt$value){opt <- newopt; thold <- i}
+		}
+	
+	}else{
 		opt <- optim(param, OPTrmsimdexsm, x=x, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
 				thold=thold, method=solver.method, control=solver.control)
+	}
 		param <- opt$par
 		opt$par <- 1/(1+exp(-opt$par))
 	}
