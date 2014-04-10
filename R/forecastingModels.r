@@ -322,14 +322,14 @@ rmsimdregexsm <- function(y, X, days, param=NULL, doOptim=TRUE, thold=2,
 		
 		opt <- list(value=Inf)
 		for(i in seq(from=2, to=4, by=0.2)){
-		newopt <- optim(param, OPTrmsimdregexsm, y=y, X=X[1:n, ], days=days[1:n], s=s, 
+		newopt <- optim(param, OPTrmsimdregexsm, y=y, X=X[1:n, ,drop=FALSE], days=days[1:n], s=s, 
 				startVal=startVal, scorefunc=fMSE, thold=i, method=solver.method, 
 				control=solver.control)
 		if(newopt$value < opt$value){opt <- newopt; thold <- i}
 		}
 	
 	}else{
-		opt <- optim(param, OPTrmsimdregexsm, y=y, X=X[1:n, ], days=days[1:n], s=s, 
+		opt <- optim(param, OPTrmsimdregexsm, y=y, X=X[1:n, ,drop=FALSE], days=days[1:n], s=s, 
 				startVal=startVal, scorefunc=fMSE, thold=thold, method=solver.method,
 				control=solver.control)
 	}
@@ -341,7 +341,7 @@ rmsimdregexsm <- function(y, X, days, param=NULL, doOptim=TRUE, thold=2,
 	filterfit <- .Call("RMSIMDAYEXPSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, 
 			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX" )
 	# Linear regression with filtered values and X matrix as explanatory variables
-	lmfit <- lm(y[ind]~filterfit[ind]+X[ind,])
+	lmfit <- lm(y[ind]~filterfit[ind]+X[ind, , drop=FALSE])
 	# Fitted values
 	fit <- cbind(1, filterfit, X)%*%matrix(coef(lmfit), ncol=1)
 	
