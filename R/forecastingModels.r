@@ -337,6 +337,9 @@ rmsimdregexsm <- function(y, X, days, param=NULL, doOptim=TRUE, thold=2,
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
+	
+	
+	ind <- (s*2):n
 	# Filter data and predict nout days ahead
 	filterfit <- .Call("RMSIMDAYEXPSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, 
 			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX" )
