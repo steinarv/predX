@@ -253,8 +253,8 @@ rmsimdexsm <- function(y, days, param=NULL, doOptim=TRUE, thold=2,
 	n <- length(y); nout <- length(days)-n; s <- length(unique(days))
 	startVal = rep(NA, s+2) #Level0 and Seas1:(s+1)
 	startVal[1] <- var(y); startVal[2] <- mean(y[1:10]);
-	nn <- min(5*s, n) #Number of days used of initializing seasonal component
-	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y)
+	nn <- min(10*s, n) #Number of days used of initializing seasonal component
+	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y[1:nn])
 	
 	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))
 	}else{param <- INVunityf(param)}
@@ -314,8 +314,8 @@ rmsimdregexsm <- function(y, X, days, param=NULL, doOptim=TRUE, thold=2,
 	
 	startVal = rep(NA, s+2) #Level0 and Seas1:(s+1)
 	startVal[1] <- var(y); startVal[2] <- mean(y[1:10]);
-	nn <- min(5*s, n) #Number of days used of initializing seasonal component
-	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y)
+	nn <- min(10*s, n) #Number of days used of initializing seasonal component
+	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y[1:nn])
 	
 	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))
 	}else{param <- INVunityf(param)}
