@@ -215,8 +215,8 @@ simdexsm <- function(y, days, param=NULL, doOptim=TRUE, solver.method="Nelder-Me
 	n <- length(y); nout <- length(days)-n; s <- length(unique(days))
 	startVal = rep(NA, s+1) #Level0 and Seas1:(s+1)
 	startVal[1] <- mean(y[1:10])
-	nn <- min(5*s, n) #Number of days used of initializing seasonal component
-	startVal[2:(s+1)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y)
+	nn <- min(10*s, n) #Number of days used of initializing seasonal component
+	startVal[2:(s+1)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y[1:nn])
 		
 	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))}else{param <- INVunityf(param)}
 	if(doOptim){
