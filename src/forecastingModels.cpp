@@ -197,7 +197,7 @@ SEXP RMSIMDAYEXPSMOOTH(SEXP Y, SEXP DAYS, SEXP S, SEXP PARAM, SEXP THOLD, SEXP S
 								xhat = (nvFIL(i)+2*sqrt(dVAR));
 								
 				dL=alfa*xhat/nvS(d)+(1-alfa)*dL; 
-				nvS(d)=gamma*nvX(i)/dL+(1-gamma)*nvS(d); 
+				nvS(d)=gamma*xhat/dL+(1-gamma)*nvS(d); 
 			
 			}else{
 				dL=alfa*nvX(i)/nvS(d)+(1-alfa)*dL; //Level updated with value of today
