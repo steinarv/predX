@@ -213,6 +213,103 @@ SEXP RMSIMDAYEXPSMOOTH(SEXP Y, SEXP DAYS, SEXP S, SEXP PARAM, SEXP THOLD, SEXP S
 }
 // -------------------------------------------------------------------------------------------------------------------
 
+
+// ------------------------------ robust simelar day Holt Winters model -----------------------------------------------
+// ----------------- This model calculates OPTNOUT predictions at each step in filtration -----------------------------
+// ------------------------ allowing for more flexible optimization routines ------------------------------------------
+SEXP SIMDAYSMOOTH(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, SEXP STARTVAL) {
+	
+	NumericVector nvX(Y); NumericVector nvDAYS(DAYS); int n = nvX.size(); 
+	int f = nvDAYS.size()-n; int s = as<int>(S); int d = 0;
+	int o = as<int>(OPTNOUT);
+	
+	double xhat = 0; // Normalized x when outliers detected
+	double thold = as<double>(THOLD); //Number of standard deviations for treshold (0 < > 4)
+	
+	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
+	double alfa = nvPARAM(0); double gamma = nvPARAM(1);
+	
+	NumericVector nvS(s); NumericMatrix nvFIL(n+f, o);
+	NumericVector nvSTARTVAL(STARTVAL);
+	double dVAR = nvSTARTVAL(0); //variance
+	double dL = nvSTARTVAL(1); //level
+	
+	for(int i=0;i<(s);i++)nvS(i)=nvSTARTVAL(i+2);
+	nvFIL(0) = nvX(0);
+
+	for(int i=1;i<(n+f);i++){
+	
+		d = nvDAYS(i);
+		
+		if(i<n){
+			dVAR = 0.06*pow(nvX(i-1)-nvFIL(i-1), 2)+0.94*dVAR;
+			nvFIL(i)=dL*nvS(d); //Predicted/Filtered value for "today"
+			
+			// If x is more than two standard deviation of filtered value we set it 
+			// equal to filtered value when updating equations
+			if( nvX(i) < (nvFIL(i)-thold*sqrt(dVAR)) || 
+							nvX(i) > (nvFIL(i)+thold*sqrt(dVAR)) ){
+				
+				nvX(i) < nvFIL(i) ? 
+					xhat = (nvFIL(i)-2*sqrt(dVAR)) : 
+					xhat = (nvFIL(i)+2*sqrt(dVAR)) ;
+								
+			
+			}else{
+				xhat=nvX(i);
+			}
+			
+			
+			dL=alfa*xhat/nvS(d)+(1-alfa)*dL; 		//Level updated with value of today
+			nvS(d)=gamma*xhat/dL+(1-gamma)*nvS(d); 	//Trend updated with change in level
+			
+			
+		}else{
+			nvFIL(i) = dL*nvS(d);
+		}
+	}
+	
+	return(wrap(nvFIL));
+}
+// -------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 // ---------------------------- Returns conditional variance for standard GARCH model --------------------------------------
 SEXP HTstdGARCH(SEXP X, SEXP H0, SEXP Param, SEXP Nout) {
