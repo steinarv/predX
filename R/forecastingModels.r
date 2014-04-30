@@ -375,7 +375,7 @@ OPTsimdaysmooth <- function(y, ymat, days, s, opt.nout, thold, param, startVal, 
 	fitval <- .Call("SIMDAYSMOOTH", Y=y, DAYS=days, S=s, OPTNOUT=opt.nout, PARAM=param,
 			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX")
 			
-	scorefunc(ymat[-(1:(s*2)), ], fitval[-(1:(s*2)), ])
+	scorefunc(ymat[(s*2+1):(n-opt.nout), ], fitval[(s*2+1):(n-opt.nout), ])
 
 }
 
