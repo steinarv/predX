@@ -48,7 +48,8 @@ INVunityf <- function(x){
 	log(x/(1-x))
 	}
 
-fMSE <- function(y,x)mean((y-x)^2)
+fMSE <- function(y, x, trim=0)mean((y-x)^2, trim=trim)
+fABS <- function(y, x, trim=0)mean(abs(y-x), trim=trim)
 
 OPTexsm1 <- function(y, param, startVal, scorefunc=fMSE){
 	n <- length(y)
@@ -368,17 +369,17 @@ rmsimdregexsm <- function(y, X, days, param=NULL, doOptim=TRUE, thold=2,
 # 		from the predicted value with a defined number of standard deviations 			#
 #		may be ignored.										#
 #########################################################################################################
-OPTsimdaysmooth <- function(y, days, s, thold, param, startVal, scorefunc){
+OPTsimdaysmooth <- function(y, ymat, days, s, opt.nout, thold, param, startVal, scorefunc){
 	n <- length(y)
 
-	fitval <- .Call("RMSIMDAYEXPSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, 
+	fitval <- .Call("SIMDAYSMOOTH", Y=y, DAYS=days, S=s, OPTNOUT=opt.nout, PARAM=param,
 			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX")
 			
-	scorefunc(y[(s*2):n], fitval[(s*2):n])
+	scorefunc(ymat[-(1:(s*2)), ], fitval[-(1:(s*2)), ])
 
 }
 
-simdaysmooth <- function(y, days, param=NULL, doOptim=TRUE, thold=2, 
+simdaysmooth <- function(y, days, param=NULL, doOptim=TRUE, thold=2, opt.nout=7,
 			solver.method="Nelder-Mead", solver.control=list()){
 			
 	n <- length(y); nout <- length(days)-n; s <- length(unique(days))
@@ -392,14 +393,18 @@ simdaysmooth <- function(y, days, param=NULL, doOptim=TRUE, thold=2,
 	}else{param <- INVunityf(param)}
 	
 	if(doOptim){
-		opt <- optim(param, OPTsimdaysmooth, y=y, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
-				thold=thold, method=solver.method, control=solver.control)
+		#Matrix used for efficient estimation of model predictions errors at each step in filtration
+		ymat <- t(sapply(1:(n-opt.nout+1), FUN=function(x)y[x:(x+opt.nout-1)]))
+		
+		opt <- optim(param, OPTsimdaysmooth, y=y, ymat, days=days[1:n], s=s, opt.nout=opt.nout, 
+				startVal=startVal, scorefunc=fMSE, thold=thold, 
+				method=solver.method, control=solver.control)
 	
 		param <- opt$par
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
-	fit <- .Call("RMSIMDAYEXPSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, 
+	fit <- .Call("SIMDAYSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, 
 			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX" )
 	
 	lOut <- list(fitIn=fit[1:n], fitOut=fit[(n+1):(n+nout)])
