@@ -396,7 +396,7 @@ simdaysmooth <- function(y, days, param=NULL, doOptim=TRUE, thold=2, opt.nout=7,
 		#Matrix used for efficient estimation of model predictions errors at each step in filtration
 		ymat <- t(sapply(1:(n-opt.nout+1), FUN=function(x)y[x:(x+opt.nout-1)]))
 		
-		opt <- optim(param, OPTsimdaysmooth, y=y, ymat, days=days[1:n], s=s, opt.nout=opt.nout, 
+		opt <- optim(param, OPTsimdaysmooth, y=y, ymat=ymat, days=days[1:n], s=s, opt.nout=opt.nout, 
 				startVal=startVal, scorefunc=fMSE, thold=thold, 
 				method=solver.method, control=solver.control)
 	
