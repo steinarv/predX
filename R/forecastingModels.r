@@ -360,6 +360,70 @@ rmsimdregexsm <- function(y, X, days, param=NULL, doOptim=TRUE, thold=2,
 }
 
 
+#########################################################################################################
+#		Similar day-seasonal exponential smoothing with model  					#
+#		optimization over a defined number of forecasts. 					#
+#		A riskmetric type of time varying volatilyt of the					#
+#		prediction error of the model is estimated. Observations that deviates 			#
+# 		from the predicted value with a defined number of standard deviations 			#
+#		may be ignored.										#
+#########################################################################################################
+OPTsimdaysmooth <- function(y, days, s, thold, param, startVal, scorefunc){
+	n <- length(y)
+
+	fitval <- .Call("RMSIMDAYEXPSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, 
+			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX")
+			
+	scorefunc(y[(s*2):n], fitval[(s*2):n])
+
+}
+
+simdaysmooth <- function(y, days, param=NULL, doOptim=TRUE, thold=2, 
+			solver.method="Nelder-Mead", solver.control=list()){
+			
+	n <- length(y); nout <- length(days)-n; s <- length(unique(days))
+	
+	startVal = rep(NA, s+2) #Level0 and Seas1:(s+1)
+	startVal[1] <- var(y); startVal[2] <- mean(y[1:10]);
+	nn <- min(10*s, n) #Number of days used of initializing seasonal component
+	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y[1:nn])
+	
+	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))
+	}else{param <- INVunityf(param)}
+	
+	if(doOptim){
+		opt <- optim(param, OPTsimdaysmooth, y=y, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
+				thold=thold, method=solver.method, control=solver.control)
+	}
+		param <- opt$par
+		opt$par <- 1/(1+exp(-opt$par))
+	}
+	
+	fit <- .Call("RMSIMDAYEXPSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, 
+			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX" )
+	
+	lOut <- list(fitIn=fit[1:n], fitOut=fit[(n+1):(n+nout)])
+	if(doOptim)lOut <- c(lOut, opt, list(thold=thold))
+	
+	lOut
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
