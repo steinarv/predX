@@ -394,7 +394,7 @@ simdaysmooth <- function(y, days, param=NULL, doOptim=TRUE, thold=2,
 	if(doOptim){
 		opt <- optim(param, OPTsimdaysmooth, y=y, days=days[1:n], s=s, startVal=startVal, scorefunc=fMSE,
 				thold=thold, method=solver.method, control=solver.control)
-	}
+	
 		param <- opt$par
 		opt$par <- 1/(1+exp(-opt$par))
 	}
