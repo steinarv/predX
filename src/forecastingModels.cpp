@@ -235,20 +235,20 @@ SEXP SIMDAYSMOOTH(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOL
 	double dL = nvSTARTVAL(1); //level
 	
 	for(int i=0;i<(s);i++)nvS(i)=nvSTARTVAL(i+2);
-	nvFIL(0) = nvX(0);
+	
 
 	for(int i=1;i<(n+f);i++){
 	
 		d = nvDAYS(i);
 		
 		if(i<n){
-			dVAR = 0.06*pow(nvX(i-1)-nvFIL(i-1), 2)+0.94*dVAR;
-			nvFIL(i)=dL*nvS(d); //Predicted/Filtered value for "today"
+			dVAR = 0.06*pow(nvX(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
+			nvFIL(i, 0)=dL*nvS(d); //Predicted/Filtered value for "today"
 			
-			// If x is more than two standard deviation of filtered value we set it 
-			// equal to filtered value when updating equations
-			if( nvX(i) < (nvFIL(i)-thold*sqrt(dVAR)) || 
-							nvX(i) > (nvFIL(i)+thold*sqrt(dVAR)) ){
+			// If x is more than two standard deviation of one step ahead prediction value we set it 
+			// equal to predicted value + 2*sd when updating equations
+			if( nvX(i) < (nvFIL(i, 0)-thold*sqrt(dVAR)) || 
+							nvX(i) > (nvFIL(i, 0)+thold*sqrt(dVAR)) ){
 				
 				nvX(i) < nvFIL(i) ? 
 					xhat = (nvFIL(i)-2*sqrt(dVAR)) : 
@@ -265,7 +265,7 @@ SEXP SIMDAYSMOOTH(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOL
 			
 			
 		}else{
-			nvFIL(i) = dL*nvS(d);
+			nvFIL(i, 0) = dL*nvS(d);
 		}
 	}
 	
