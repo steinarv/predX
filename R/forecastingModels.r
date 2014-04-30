@@ -404,7 +404,7 @@ simdaysmooth <- function(y, days, param=NULL, doOptim=TRUE, thold=2, opt.nout=7,
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
-	fit <- .Call("SIMDAYSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, opt.nout=1, 
+	fit <- .Call("SIMDAYSMOOTH", Y=y, DAYS=days, S=s, OPTNOUT=1, PARAM=param, 
 			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX" )
 	
 	lOut <- list(fitIn=fit[1:n, 1])
