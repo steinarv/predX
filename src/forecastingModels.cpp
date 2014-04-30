@@ -251,8 +251,8 @@ SEXP SIMDAYSMOOTH(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOL
 							nvX(i) > (nvFIL(i, 0)+thold*sqrt(dVAR)) ){
 				
 				nvX(i) < nvFIL(i, 0) ? 
-					xhat = (nvFIL(i)-2*sqrt(dVAR)) : 
-					xhat = (nvFIL(i)+2*sqrt(dVAR)) ;
+					xhat = (nvFIL(i, 0)-2*sqrt(dVAR)) : 
+					xhat = (nvFIL(i, 0)+2*sqrt(dVAR)) ;
 								
 			
 			}else{
