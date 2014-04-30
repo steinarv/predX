@@ -404,10 +404,11 @@ simdaysmooth <- function(y, days, param=NULL, doOptim=TRUE, thold=2, opt.nout=7,
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
-	fit <- .Call("SIMDAYSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, 
+	fit <- .Call("SIMDAYSMOOTH", Y=y, DAYS=days, S=s, PARAM=param, opt.nout=1, 
 			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX" )
 	
-	lOut <- list(fitIn=fit[1:n], fitOut=fit[(n+1):(n+nout)])
+	lOut <- list(fitIn=fit[1:n, 1])
+	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))
 	if(doOptim)lOut <- c(lOut, opt, list(thold=thold))
 	
 	lOut
