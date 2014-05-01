@@ -312,13 +312,13 @@ SEXP SIMDAYSMOOTHLEVELINPUT(SEXP Y, SEXP L, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEX
 	
 	// One smoothed level and one external level input is combined based on historical accuracy
 	double dL = nvSTARTVAL(1); //level
-	double dL1 = 0 // smoothed level
+	double dL1 = dL; // smoothed level
 	NumericVector nvL(L);
-	double dL2 = 0 // input level
-	double r1=0.5 // accuracy of smoothed level
-	double r2=0.5 // accuracy of input level
-	double w1=0.5 // Weight assigned to smoothed level
-	double w2=0.5 // Weight assigned to input level
+	double dL2 = 0; // input level
+	double r1=0.5; // accuracy of smoothed level
+	double r2=0.5; // accuracy of input level
+	double w1=0.5; // Weight assigned to smoothed level
+	double w2=0.5; // Weight assigned to input level
 	
 	
 	for(int i=1;i<(n+f);i++){
