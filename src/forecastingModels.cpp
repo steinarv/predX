@@ -243,10 +243,21 @@ SEXP SIMDAYSMOOTH(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOL
 		
 		if(i<n){
 			dVAR = 0.06*pow(nvX(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
-			nvFIL(i, 0)=dL*nvS(d); //Predicted/Filtered value for "today"
+			
+			//nvFIL(i, 0)=dL*nvS(d); //Predicted/Filtered value for "today"
+			
+			if(i<=(n-o)){ //Make predictions "o" steps ahead
+				for(int j=0; j<o; j++){
+					d=nvDAYS(i+j);
+					nvFIL(i, j)=dL*nvS(d); //Predicted/Filtered value for "today"
+				}
+				d = nvDAYS(i);
+			}else{
+				nvFIL(i, 0)=dL*nvS(d);
+			}
 			
 			// If x is more than two standard deviation of one step ahead prediction value we set it 
-			// equal to predicted value + 2*sd when updating equations
+			// equal to predicted value + thold*sd when updating equations
 			if( nvX(i) < (nvFIL(i, 0)-thold*sqrt(dVAR)) || 
 							nvX(i) > (nvFIL(i, 0)+thold*sqrt(dVAR)) ){
 				
@@ -260,7 +271,7 @@ SEXP SIMDAYSMOOTH(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOL
 			}
 			
 			
-			dL=alfa*xhat/nvS(d)+(1-alfa)*dL; 		//Level updated with value of today
+			dL=alfa*xhat/nvS(d)+(1-alfa)*dL; 	//Level updated with value of today
 			nvS(d)=gamma*xhat/dL+(1-gamma)*nvS(d); 	//Trend updated with change in level
 			
 			
