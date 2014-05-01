@@ -193,8 +193,10 @@ SEXP RMSIMDAYEXPSMOOTH(SEXP Y, SEXP DAYS, SEXP S, SEXP PARAM, SEXP THOLD, SEXP S
 			// equal to filtered value when updating equations
 			if( nvX(i) < (nvFIL(i)-thold*sqrt(dVAR)) || 
 							nvX(i) > (nvFIL(i)+thold*sqrt(dVAR)) ){
-				nvX(i) < nvFIL(i) ? xhat = (nvFIL(i)-2*sqrt(dVAR)) : 
-								xhat = (nvFIL(i)+2*sqrt(dVAR));
+								
+				nvX(i) < nvFIL(i) ? 
+					xhat = (nvFIL(i)-thold*sqrt(dVAR)) : 
+					xhat = (nvFIL(i)+thold*sqrt(dVAR));
 								
 				dL=alfa*xhat/nvS(d)+(1-alfa)*dL; 
 				nvS(d)=gamma*xhat/dL+(1-gamma)*nvS(d); 
