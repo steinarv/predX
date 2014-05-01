@@ -454,7 +454,8 @@ simdaysmoothlevelinput <- function(y, l, days, param=NULL, doOptim=TRUE, thold=2
 			ymat <- matrix(y, ncol=1)
 		}
 		
-		opt <- optim(param, OPTsimdaysmooth, y=y, ymat=ymat, l=l, days=days[1:n], s=s, opt.nout=opt.nout, 
+		opt <- optim(param, OPTsimdaysmoothlevelinput, y=y, ymat=ymat, l=l, days=days[1:n], s=s, 
+				opt.nout=opt.nout, 
 				startVal=startVal, scorefunc=scorefunc, thold=thold, 
 				method=solver.method, control=solver.control)
 	
