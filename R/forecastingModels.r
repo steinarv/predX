@@ -380,7 +380,7 @@ OPTsimdaysmooth <- function(y, ymat, days, s, opt.nout, thold, param, startVal, 
 }
 
 simdaysmooth <- function(y, days, param=NULL, doOptim=TRUE, thold=2, opt.nout=7,
-			solver.method="Nelder-Mead", solver.control=list()){
+			scorefunc=fMSE, solver.method="Nelder-Mead", solver.control=list()){
 			
 	n <- length(y); nout <- length(days)-n; s <- length(unique(days))
 	
@@ -397,7 +397,7 @@ simdaysmooth <- function(y, days, param=NULL, doOptim=TRUE, thold=2, opt.nout=7,
 		ymat <- t(sapply(1:(n-opt.nout+1), FUN=function(x)y[x:(x+opt.nout-1)]))
 		
 		opt <- optim(param, OPTsimdaysmooth, y=y, ymat=ymat, days=days[1:n], s=s, opt.nout=opt.nout, 
-				startVal=startVal, scorefunc=fMSE, thold=thold, 
+				startVal=startVal, scorefunc=scorefunc, thold=thold, 
 				method=solver.method, control=solver.control)
 	
 		param <- opt$par
