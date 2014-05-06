@@ -501,6 +501,152 @@ simdaysmoothlevelinput <- function(y, l, days, param=NULL, doOptim=TRUE, thold=2
 
 
 
+OPTsimdaysmooth2 <- function(y, ymat, days, s, opt.nout, thold, param, startVal, scorefunc, trim){
+	n <- length(y)
+
+	fitval <- .Call("SIMDAYSMOOTH2", Y=y, DAYS=days, S=s, OPTNOUT=opt.nout, PARAM=param,
+			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX")
+			
+	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], fitval[(s*2+1):(n-opt.nout+1), ], trim=trim)
+
+}
+
+simdaysmooth2 <- function(y, days, param=NULL, doOptim=TRUE, thold=2, opt.nout=7,
+			scorefunc=fMSE, trim=0, solver.method="Nelder-Mead", solver.control=list()){
+			
+	n <- length(y); nout <- length(days)-n; s <- length(unique(days))
+	
+	startVal = rep(NA, s+2) #Level0 and Seas1:(s+1)
+	startVal[1] <- var(y); startVal[2] <- mean(y[1:10]);
+	nn <- min(10*s, n) #Number of days used of initializing seasonal component
+	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x-mean(y[1:nn])
+	
+	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))
+	}else{param <- INVunityf(param)}
+	
+	if(doOptim){
+		#Matrix used for efficient estimation of model predictions errors at each step in filtration
+		if(opt.nout>1){
+			ymat <- t(sapply(1:(n-opt.nout+1), FUN=function(x)y[x:(x+opt.nout-1)]))
+		}else{
+			ymat <- matrix(y, ncol=1)
+		}
+		
+		opt <- optim(param, OPTsimdaysmooth2, y=y, ymat=ymat, days=days[1:n], s=s, opt.nout=opt.nout, 
+				startVal=startVal, scorefunc=scorefunc, trim=trim, thold=thold, 
+				method=solver.method, control=solver.control)
+	
+		param <- opt$par
+		opt$par <- 1/(1+exp(-opt$par))
+	}
+	
+	fit <- .Call("SIMDAYSMOOTH2", Y=y, DAYS=days, S=s, OPTNOUT=1, PARAM=param, 
+			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX" )
+	
+	lOut <- list(fitIn=fit[1:n, 1])
+	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))
+	if(doOptim)lOut <- c(lOut, opt, list(thold=thold))
+	
+	lOut
+
+}
+
+
+
+OPTsimdaysmoothlevelinput2 <- function(y, ymat, l, days, s, opt.nout, thold, param, startVal, scorefunc){
+	n <- length(y)
+
+	fitval <- .Call("SIMDAYSMOOTHLEVELINPUT2", Y=y, L=l, DAYS=days, S=s, OPTNOUT=opt.nout, PARAM=param,
+			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX")
+			
+	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], fitval[(s*2+1):(n-opt.nout+1), ])
+
+}
+
+simdaysmoothlevelinput2 <- function(y, l, days, param=NULL, doOptim=TRUE, thold=2, opt.nout=7,
+				scorefunc=fMSE, solver.method="Nelder-Mead", solver.control=list()){
+			
+	if(length(l)!=length(days))stop("input of level and days do not match")
+	
+	n <- length(y); nout <- length(days)-n; s <- length(unique(days))
+	
+	startVal = rep(NA, s+2) #Level0 and Seas1:(s+1)
+	startVal[1] <- var(y); startVal[2] <- mean(y[1:10]);
+	nn <- min(10*s, n) #Number of days used of initializing seasonal component
+	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x-mean(y[1:nn])
+	
+	if(is.null(param)){param <-  INVunityf(c(0.5, 0.5))
+	}else{param <- INVunityf(param)}
+	
+	if(doOptim){
+		#Matrix used for efficient estimation of model predictions errors at each step in filtration
+		if(opt.nout>1){
+			ymat <- t(sapply(1:(n-opt.nout+1), FUN=function(x)y[x:(x+opt.nout-1)]))
+		}else{
+			ymat <- matrix(y, ncol=1)
+		}
+		
+		opt <- optim(param, OPTsimdaysmoothlevelinput2, y=y, ymat=ymat, l=l, days=days[1:n], s=s, 
+				opt.nout=opt.nout, 
+				startVal=startVal, scorefunc=scorefunc, thold=thold, 
+				method=solver.method, control=solver.control)
+	
+		param <- opt$par
+		opt$par <- 1/(1+exp(-opt$par))
+	}
+	
+	fit <- .Call("SIMDAYSMOOTHLEVELINPUT2", Y=y, L=l, DAYS=days, S=s, OPTNOUT=1, PARAM=param, 
+			THOLD=thold, STARTVAL=startVal, PACKAGE = "predX" )
+	
+	lOut <- list(fitIn=fit[1:n, 1])
+	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))
+	if(doOptim)lOut <- c(lOut, opt, list(thold=thold))
+	
+	lOut
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
