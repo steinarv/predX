@@ -523,8 +523,8 @@ SEXP SIMDAYSMOOTHLEVELINPUT2(SEXP Y, SEXP L, SEXP DAYS, SEXP S, SEXP OPTNOUT, SE
 			w1=(1-r1/(r1+r2)); w2=1-w1; //Weights
 			
 			// ------------ delete ------------
-			std::cout << "w1 and w2: " << w1 << ", " << w2 << std::endl;
-			// w1 and w2 seemed to converge to 0.5 and 0.5
+			//std::cout << "w1 and w2: " << w1 << ", " << w2 << std::endl;
+			//Probably best to predefine at average or optimize w1 and w2
 			
 			dL1=alfa*(xhat-nvS(d))+(1-alfa)*dL1; 	//Smoothed level updated with value of today
 			dL2=nvL(i);
