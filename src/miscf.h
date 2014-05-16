@@ -3,6 +3,8 @@
 
 #include <RcppArmadillo.h>
 
+void unityFunc(NumericVector &y);
+
 RcppExport SEXP rollavg(SEXP x, SEXP dim) ;
 
 #endif
