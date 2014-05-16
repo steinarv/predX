@@ -97,7 +97,7 @@ SEXP HW_TRIPLE_M(SEXP Y, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP STARTVAL, SEXP N
 			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
 			nvS(i%s)=gamma*nvX(i)/dL+(1-gamma)*nvS(i%s); 	//Season updated
 		}else{
-			nvFIL(i) = (dL+dT)*nvS(i%s);
+			nvFIL(i, 0) = (dL+dT)*nvS(i%s);
 		}
 	}
 	
