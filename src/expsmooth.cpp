@@ -2,14 +2,6 @@
 
 using namespace Rcpp ;
 
-// Function that ensures smoothing parameters between 0 and 1
-void unityFunc(NumericVector &y){
-  for(int i=0;i<y.size();i++)
-    y(i) = 1/(1+::exp(-y(i)));
-
-}
-
-
 // ---------------------------- Holt-Winters double exponential smoothing -------------------------------
 SEXP HW_1(SEXP Y, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
 	NumericVector nvX(Y); int n = nvX.size(); int f = as<int>(NOUT);
