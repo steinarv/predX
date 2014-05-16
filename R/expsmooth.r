@@ -63,10 +63,18 @@ hw_triple_m <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7,
 			method=solver.method, control=solver.control)
 	
 		param <- opt$par
+		if(trend & seas){
+	  		param_ <- param
+		}else{
+	  		param_ <- c(param[1], 0, 0)
+	  		if(trend)param_[2] <- param[2]
+	  		if(seas)param_[3] <- param[2]
+		}
+		
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
-	fit <- .Call("HW_TRIPLE_M", Y=y, S=s, OPTNOUT=1, PARAM=param, 
+	fit <- .Call("HW_TRIPLE_M", Y=y, S=s, OPTNOUT=1, PARAM=param_, 
 			        STARTVAL=startVal, NOUT=nout, PACKAGE = "predX" )
 	
 	lOut <- list(fitIn=fit[1:n, 1])
