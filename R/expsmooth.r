@@ -31,11 +31,11 @@ hw_triple_m <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7,
       trend=TRUE, seas=TRUE, scorefunc=fMSE, trim=0, solver.method="Nelder-Mead", solver.control=list()){
 			
 	n <- length(y)
+	nn <- min(10*s, n) #Number of days used of initializing seasonal component
 	
 	startVal = rep(NA, s+2) #Level0 Trend0, and Seas1:s
-	startVal[1] <- mean(y[1:10]); startVal[2] <- 0
+	startVal[1] <- mean(y[1:nn]); startVal[2] <- 0
 	
-	nn <- min(10*s, n) #Number of days used of initializing seasonal component
 	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(rep(1:s, len=nn)), mean)$x/mean(y[1:nn])
 	
 	nparam <- (1+seas+trend)
@@ -67,7 +67,7 @@ hw_triple_m <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7,
 	
 	lOut <- list(fitIn=fit[1:n, 1])
 	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))
-	if(doOptim)lOut <- c(lOut, opt, list(thold=thold))
+	if(doOptim)lOut <- c(lOut, opt)
 	
 	lOut
 
