@@ -1,10 +1,10 @@
-INVunityf <- function(x){
-x <- sapply(x, FUN=function(z)min(z,0.9999)) #Ensure numeric value in return
-log(x/(1-x))
-}
+#INVunityf <- function(x){
+#x <- sapply(x, FUN=function(z)min(z,0.9999)) #Ensure numeric value in return
+#log(x/(1-x))
+#}
 
-fMSE <- function(y, x, trim=0)mean((y-x)^2, trim=trim)
-fABS <- function(y, x, trim=0)mean(abs(y-x), trim=trim)
+#fMSE <- function(y, x, trim=0)mean((y-x)^2, trim=trim)
+#fABS <- function(y, x, trim=0)mean(abs(y-x), trim=trim)
 
 OPThw_triple_m <- function(y, ymat, s, opt.nout, param, trend, seas, startVal, scorefunc, trim){
 	n <- length(y)
