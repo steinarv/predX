@@ -66,7 +66,7 @@ SEXP HW_2(SEXP Y, SEXP S, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
 // ---------------------------- Holt-Winters triple exponential smoothing (multiplicative) ----------------------------------
 SEXP HW_TRIPLE_M(SEXP Y, SEXP S, SEXP PARAM, SEXP OPTNOUT, SEXP STARTVAL, SEXP NOUT) {
 	NumericVector nvX(Y); int n = nvX.size(); int f = as<int>(NOUT);
-	int s = as<int>(S); int o = as<int>(OPTNOUT); int m = as<int>(MULT);
+	int s = as<int>(S); int o = as<int>(OPTNOUT); 
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
 	double alfa = nvPARAM(0); double gamma = nvPARAM(1);
