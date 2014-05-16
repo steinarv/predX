@@ -58,10 +58,17 @@ hw_triple_m <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7,
 			ymat <- matrix(y, ncol=1)
 		}
 		
-		opt <- optim(param, OPThw_triple_m, y=y, ymat=ymat, s=s, opt.nout=opt.nout, 
-		    	trend=trend, seas=seas, startVal=startVal, scorefunc=scorefunc, trim=trim, 
-			method=solver.method, control=solver.control)
-	
+		if(seas || trend){
+			opt <- optim(param, OPThw_triple_m, y=y, ymat=ymat, s=s, opt.nout=opt.nout, 
+			    	trend=trend, seas=seas, startVal=startVal, scorefunc=scorefunc, trim=trim, 
+				method=solver.method, control=solver.control)
+		}else{
+			opt <- optim(param, OPThw_triple_m, y=y, ymat=ymat, s=s, opt.nout=opt.nout, 
+			    	trend=trend, seas=seas, startVal=startVal, scorefunc=scorefunc, trim=trim, 
+				lower=-10, upper=10, method="Brent", control=solver.control)
+		}
+		
+		
 		param <- opt$par
 		if(trend & seas){
 	  		param_ <- param
