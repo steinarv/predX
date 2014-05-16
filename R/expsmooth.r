@@ -6,7 +6,7 @@
 #fMSE <- function(y, x, trim=0)mean((y-x)^2, trim=trim)
 #fABS <- function(y, x, trim=0)mean(abs(y-x), trim=trim)
 
-OPThw_triple_m <- function(y, ymat, s, opt.nout, param, trend, seas, startVal, scorefunc, trim, mult){
+OPThw_triple <- function(y, ymat, s, opt.nout, param, trend, seas, startVal, scorefunc, trim, mult){
 	n <- length(y)
 	
 	if(trend & seas){
@@ -18,14 +18,14 @@ OPThw_triple_m <- function(y, ymat, s, opt.nout, param, trend, seas, startVal, s
   }
 	
 
-	fitval <- .Call("HW_TRIPLE_M", Y=y, S=s, OPTNOUT=opt.nout, PARAM=param_,
+	fitval <- .Call("HW_TRIPLE", Y=y, S=s, OPTNOUT=opt.nout, PARAM=param_,
 			             STARTVAL=startVal, NOUT=0, MULT=mult, PACKAGE = "predX")
 			
 	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], fitval[(s*2+1):(n-opt.nout+1), ], trim=trim)
 
 }
 
-hw_triple_m <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE, seas=TRUE, 
+hw_triple <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE, seas=TRUE, 
 			mult=FALSE, scorefunc=fMSE, trim=0, solver.method="Nelder-Mead", solver.control=list()){
 			
 	n <- length(y)
@@ -55,11 +55,11 @@ hw_triple_m <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7, tren
 		}
 		
 		if(seas || trend){
-			opt <- optim(param, OPThw_triple_m, y=y, ymat=ymat, s=s, opt.nout=opt.nout, 
+			opt <- optim(param, OPThw_triple, y=y, ymat=ymat, s=s, opt.nout=opt.nout, 
 			    	trend=trend, seas=seas, startVal=startVal, scorefunc=scorefunc, trim=trim, 
 				mult=mult, method=solver.method, control=solver.control)
 		}else{
-			opt <- optim(param, OPThw_triple_m, y=y, ymat=ymat, s=s, opt.nout=opt.nout, 
+			opt <- optim(param, OPThw_triple, y=y, ymat=ymat, s=s, opt.nout=opt.nout, 
 			    	trend=trend, seas=seas, startVal=startVal, scorefunc=scorefunc, trim=trim, 
 				mult=mult, lower=-10, upper=10, method="Brent", control=solver.control)
 		}
@@ -77,7 +77,7 @@ hw_triple_m <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7, tren
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
-	fit <- .Call("HW_TRIPLE_M", Y=y, S=s, OPTNOUT=1, PARAM=param_, 
+	fit <- .Call("HW_TRIPLE", Y=y, S=s, OPTNOUT=1, PARAM=param_, 
 			        STARTVAL=startVal, NOUT=nout, MULT=mult, PACKAGE = "predX" )
 	
 	lOut <- list(fitIn=fit[1:n, 1])
