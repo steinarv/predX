@@ -17,9 +17,7 @@ OPThw_triple_m <- function(y, ymat, s, opt.nout, param, trend, seas, startVal, s
 	  if(seas)param_[3] <- param[2]
   }
 	
-	print(param_)
-	print(startVal)
-	
+
 	fitval <- .Call("HW_TRIPLE_M", Y=y, S=s, OPTNOUT=opt.nout, PARAM=param_,
 			             STARTVAL=startVal, NOUT=0, PACKAGE = "predX")
 			
@@ -47,9 +45,7 @@ hw_triple_m <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7,
 	   param <-  INVunityf(rep(0.25, nparam))
 	}else{param <- INVunityf(param)}
 	
-	print(startVal)
-	print(param)
-	
+
 	if(doOptim){
 		#Matrix used for efficient estimation of model predictions errors at each step in filtration
 		if(opt.nout>1){
