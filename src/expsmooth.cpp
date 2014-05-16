@@ -11,7 +11,7 @@ void unityFunc(NumericVector &y){
 
 
 // ---------------------------- Holt-Winters double exponential smoothing -------------------------------
-SEXP HW_DOUBLE_EXP(SEXP Y, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
+SEXP HW_1(SEXP Y, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
 	NumericVector nvX(Y); int n = nvX.size(); int f = as<int>(NOUT);
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
@@ -35,8 +35,8 @@ SEXP HW_DOUBLE_EXP(SEXP Y, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
 	return(wrap(nvFIL));
 }
 
-// ---------------------------- Holt-Winters triple exponential smoothing--------------------------------------------
-SEXP SEASEXPSMOOTH(SEXP Y, SEXP S, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
+// ---------------------------- Holt-Winters triple exponential smoothing (multiplicative) ----------------------------------
+SEXP HW_2(SEXP Y, SEXP S, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
 	NumericVector nvX(Y); int n = nvX.size(); int f = as<int>(NOUT);
 	int s = as<int>(S);
 	
@@ -62,3 +62,4 @@ SEXP SEASEXPSMOOTH(SEXP Y, SEXP S, SEXP PARAM, SEXP STARTVAL, SEXP NOUT) {
 	
 	return(wrap(nvFIL));
 }
+
