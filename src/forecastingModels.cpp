@@ -1,4 +1,5 @@
 #include "forecastingModels.h"
+#include "miscf.h"
 
 using namespace Rcpp ;
 
