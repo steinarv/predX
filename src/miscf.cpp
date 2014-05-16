@@ -14,3 +14,10 @@ SEXP rollavg(SEXP x, SEXP dim){
   
   return(wrap(out));
 }
+
+// Function that ensures parameters between 0 and 1
+void unityFunc(NumericVector &y){
+  for(int i=0;i<y.size();i++)
+    y(i) = 1/(1+::exp(-y(i)));
+
+}
