@@ -2,14 +2,6 @@
 
 using namespace Rcpp ;
 
-// ---------------------------- Div suport functions -----------------------------------------------------------------
-void unityFunc(NumericVector &y){
-	for(int i=0;i<y.size();i++)
-		y(i) = 1/(1+::exp(-y(i)));
-
-}
-
-
 // ---------------------------- Exponential smoothing 1 --------------------------------------------------------------
 SEXP EXPSMOOTH1(SEXP Y, SEXP PARAM, SEXP STARTVAL, SEXP NOUT){
 	NumericVector nvX(Y); int n=nvX.size();
