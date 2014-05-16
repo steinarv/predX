@@ -36,7 +36,11 @@ hw_triple_m <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7,
 	startVal = rep(NA, s+2) #Level0 Trend0, and Seas1:s
 	startVal[1] <- mean(y[1:nn]); startVal[2] <- 0
 	
-	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(rep(1:s, len=nn)), mean)$x/mean(y[1:nn])
+	if(seas){
+		startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(rep(1:s, len=nn)), mean)$x/mean(y[1:nn])
+	}else{
+		startVal[3:(s+2)] <- 1
+	}
 	
 	nparam <- (1+seas+trend)
 	if(is.null(param) || length(param)!=nparam){ 
