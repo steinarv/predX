@@ -33,7 +33,7 @@ hw_triple_m <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7,
 	startVal[1] <- mean(y[1:10]); startVal[2] <- 0
 	
 	nn <- min(10*s, n) #Number of days used of initializing seasonal component
-	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y[1:nn])
+	startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(rep(1:s, len=nn)), mean)$x/mean(y[1:nn])
 	
 	nparam <- (1+seas+trend)
 	if(is.null(param) || length(param)!=nparam){ 
