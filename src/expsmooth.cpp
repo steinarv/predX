@@ -1,4 +1,5 @@
 #include "expsmooth.h"
+#include "miscf.h"
 
 using namespace Rcpp ;
 
