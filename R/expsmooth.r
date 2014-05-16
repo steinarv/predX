@@ -17,8 +17,11 @@ OPThw_triple_m <- function(y, ymat, s, opt.nout, param, trend, seas, startVal, s
 	  if(seas)param_[3] <- param[2]
   }
 	
+	print(param_)
+	print(startVal)
+	
 	fitval <- .Call("HW_TRIPLE_M", Y=y, S=s, OPTNOUT=opt.nout, PARAM=param_,
-			             STARTVAL=startVal, PACKAGE = "predX")
+			             STARTVAL=startVal, NOUT=0, PACKAGE = "predX")
 			
 	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], fitval[(s*2+1):(n-opt.nout+1), ], trim=trim)
 
@@ -40,6 +43,9 @@ hw_triple_m <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7,
 	   param <-  INVunityf(rep(0.25, nparam))
 	}else{param <- INVunityf(param)}
 	
+	print(startVal)
+	print(param)
+	
 	if(doOptim){
 		#Matrix used for efficient estimation of model predictions errors at each step in filtration
 		if(opt.nout>1){
@@ -49,15 +55,15 @@ hw_triple_m <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7,
 		}
 		
 		opt <- optim(param, OPThw_triple_m, y=y, ymat=ymat, s=s, opt.nout=opt.nout, 
-		    trend=trend, seas=seas, startVal=startVal, scorefunc=scorefunc, trim=trim, 
-				method=solver.method, control=solver.control)
+		    	trend=trend, seas=seas, startVal=startVal, scorefunc=scorefunc, trim=trim, 
+			method=solver.method, control=solver.control)
 	
 		param <- opt$par
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
 	fit <- .Call("HW_TRIPLE_M", Y=y, S=s, OPTNOUT=1, PARAM=param, 
-			        STARTVAL=startVal, PACKAGE = "predX" )
+			        STARTVAL=startVal, NOUT=nout, PACKAGE = "predX" )
 	
 	lOut <- list(fitIn=fit[1:n, 1])
 	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))
