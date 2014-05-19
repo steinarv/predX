@@ -106,7 +106,7 @@ hw_triple <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7, trend=
 #													#
 #########################################################################################################
 
-OPThw_simday <- function(y, ymat, days, opt.nout, param, trend, thold, startVal, scorefunc, trim, mult){
+OPThw_simday <- function(y, ymat, days, s, opt.nout, param, trend, thold, startVal, scorefunc, trim, mult){
 	n <- length(y)
 	
 	if(trend){
@@ -140,7 +140,7 @@ hw_simday <- function(y, days, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE,
 	}
 
 	
-	nparam <- (1+trend)
+	nparam <- (2+trend)
 	if(is.null(param) || length(param)!=nparam){ 
 	   param <-  INVunityf(rep(0.25, nparam))
 	}else{param <- INVunityf(param)}
@@ -155,7 +155,7 @@ hw_simday <- function(y, days, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE,
 		}
 		
 
-		opt <- optim(param, OPThw_simday, y=y, ymat=ymat, days=days, opt.nout=opt.nout, 
+		opt <- optim(param, OPThw_simday, y=y, ymat=ymat, days=days, s=s, opt.nout=opt.nout, 
 		    	trend=trend, thold=thold, startVal=startVal, scorefunc=scorefunc, trim=trim, 
 			mult=mult, method=solver.method, control=solver.control)
 
