@@ -78,6 +78,7 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, 
 
 	
 	std::cout << s << std::endl;
+	sleep(5);
 	
 	double xhat = 0; // Normalized x when outliers detected
 	double thold = as<double>(THOLD); //Number of standard deviations for treshold (0 < > 4)
