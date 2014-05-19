@@ -89,11 +89,14 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, 
 	double dL = nvSTARTVAL(2); 	//level
 	double dL1 = dL;		//holds previous level
 	
+	std::cout << nvSTARTVAL.size() << std::endl;
+	std::cout << s << std::endl;
+	
 	for(int i=0;i<(s);i++)nvS(i)=nvSTARTVAL(i+3);
 	
 
 	for(int i=1;i<(n+f);i++){
-	std::cout << i << std::endl;
+	
 		d = nvDAYS(i);
 		
 		// If multiplicative........................................................................
