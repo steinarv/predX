@@ -126,23 +126,21 @@ OPThw_simday <- function(y, ymat, days, opt.nout, param, trend, thold, startVal,
 hw_simday <- function(y, days, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE, thold=3, 
 			mult=FALSE, scorefunc=fMSE, trim=0, solver.method="Nelder-Mead", solver.control=list()){
 			
-	n <- length(y)
+	n <- length(y); nout <- length(days)-n; s <- length(unique(days));
 	nn <- min(10*s, n) #Number of days used of initializing seasonal component
+	
 	
 	startVal = rep(NA, s+2) #Level0 Trend0, and Seas1:s
 	startVal[1] <- mean(y[1:nn]); startVal[2] <- 0
 	
-	if(seas){
-		if(mult){
-		startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(rep(1:s, len=nn)), mean)$x/mean(y[1:nn])
-		}else{
-		startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(rep(1:s, len=nn)), mean)$x-mean(y[1:nn])
-		}
+	if(mult){
+		startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y[1:nn])
 	}else{
-		startVal[3:(s+2)] <- 1
+		startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x-mean(y[1:nn])
 	}
+
 	
-	nparam <- (1+seas+trend)
+	nparam <- (1+trend)
 	if(is.null(param) || length(param)!=nparam){ 
 	   param <-  INVunityf(rep(0.25, nparam))
 	}else{param <- INVunityf(param)}
@@ -156,31 +154,24 @@ hw_simday <- function(y, days, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE,
 			ymat <- matrix(y, ncol=1)
 		}
 		
-		if(seas || trend){
-			opt <- optim(param, OPThw_simday, y=y, ymat=ymat, days=days, opt.nout=opt.nout, 
-			    	trend=trend, thold=thold, startVal=startVal, scorefunc=scorefunc, trim=trim, 
-				mult=mult, method=solver.method, control=solver.control)
-		}else{
-			opt <- optim(param, OPThw_simday, y=y, ymat=ymat, days=days, opt.nout=opt.nout, 
-			    	trend=trend, thold=thold, startVal=startVal, scorefunc=scorefunc, trim=trim, 
-				mult=mult, lower=-10, upper=10, method="Brent", control=solver.control)
-		}
-		
+
+		opt <- optim(param, OPThw_simday, y=y, ymat=ymat, days=days, opt.nout=opt.nout, 
+		    	trend=trend, thold=thold, startVal=startVal, scorefunc=scorefunc, trim=trim, 
+			mult=mult, method=solver.method, control=solver.control)
+
 		
 		param <- opt$par
-		if(trend & seas){
+		if(trend){
 	  		param_ <- param
 		}else{
-	  		param_ <- c(param[1], -1000, -1000)
-	  		if(trend)param_[2] <- param[2]
-	  		if(seas)param_[3] <- param[2]
-		}
+	  		param_ <- c(param[1], -1000, param[2])
+	  	}
 		
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
-	fit <- .Call("HW_SIMDAY", Y=y, S=s, OPTNOUT=1, PARAM=param_, 
-			        STARTVAL=startVal, NOUT=nout, MULT=mult, PACKAGE = "predX" )
+	fit <- .Call("HW_SIMDAY", Y=y, DAYS=days, S=s, OPTNOUT=1, PARAM=param_, THOLD=thold, 	
+			        STARTVAL=startVal, MULT=mult, PACKAGE = "predX" )
 	
 	lOut <- list(startVal=startVal, fitIn=fit[1:n, 1])
 	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))
