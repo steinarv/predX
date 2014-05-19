@@ -80,7 +80,7 @@ hw_triple <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7, trend=
 	fit <- .Call("HW_TRIPLE", Y=y, S=s, OPTNOUT=1, PARAM=param_, 
 			        STARTVAL=startVal, NOUT=nout, MULT=mult, PACKAGE = "predX" )
 	
-	lOut <- list(fitIn=fit[1:n, 1])
+	lOut <- list(startVal=startVal, fitIn=fit[1:n, 1])
 	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))
 	if(doOptim)lOut <- c(lOut, opt)
 	
