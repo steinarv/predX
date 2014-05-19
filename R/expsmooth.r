@@ -109,17 +109,15 @@ hw_triple <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7, trend=
 OPThw_simday <- function(y, ymat, days, opt.nout, param, trend, thold, startVal, scorefunc, trim, mult){
 	n <- length(y)
 	
-	if(trend & seas){
+	if(trend){
 	  param_ <- param
 	}else{
-	  param_ <- c(param[1], -1000, -1000)
-	  if(trend)param_[2] <- param[2]
-	  if(seas)param_[3] <- param[2]
-  }
+	  param_ <- c(param[1], -1000, param[2])
+	}
 	
 
-	fitval <- .Call("HW_SIMDAY", Y=y, S=s, OPTNOUT=opt.nout, PARAM=param_,
-			             STARTVAL=startVal, NOUT=0, MULT=mult, PACKAGE = "predX")
+	fitval <- .Call("HW_SIMDAY", Y=y, DAYS=days, S=s, OPTNOUT=opt.nout, PARAM=param_, THOLD=thold,
+			             STARTVAL=startVal, MULT=mult, PACKAGE = "predX")
 			
 	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], fitval[(s*2+1):(n-opt.nout+1), ], trim=trim)
 
