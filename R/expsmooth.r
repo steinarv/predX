@@ -12,7 +12,7 @@ OPThw_triple <- function(y, ymat, s, opt.nout, param, trend, seas, startVal, sco
 	if(trend & seas){
 	  param_ <- param
 	}else{
-	  param_ <- c(param[1], -100, -100)
+	  param_ <- c(param[1], -1000, -1000)
 	  if(trend)param_[2] <- param[2]
 	  if(seas)param_[3] <- param[2]
   }
@@ -69,7 +69,7 @@ hw_triple <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7, trend=
 		if(trend & seas){
 	  		param_ <- param
 		}else{
-	  		param_ <- c(param[1], 0, 0)
+	  		param_ <- c(param[1], -1000, -1000)
 	  		if(trend)param_[2] <- param[2]
 	  		if(seas)param_[3] <- param[2]
 		}
