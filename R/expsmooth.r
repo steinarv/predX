@@ -35,7 +35,11 @@ hw_triple <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7, trend=
 	startVal[1] <- mean(y[1:nn]); startVal[2] <- 0
 	
 	if(seas){
+		if(mult){
 		startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(rep(1:s, len=nn)), mean)$x/mean(y[1:nn])
+		}else{
+		startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(rep(1:s, len=nn)), mean)$x-mean(y[1:nn])
+		}
 	}else{
 		startVal[3:(s+2)] <- 1
 	}
