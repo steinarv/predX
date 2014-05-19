@@ -86,8 +86,8 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, 
 	NumericVector nvS(s); NumericMatrix nvFIL(n+f, o);
 	NumericVector nvSTARTVAL(STARTVAL);
 	double dVAR = nvSTARTVAL(0); 	//variance
-	double dT = nvSTARTVAL(1);	//trend
-	double dL = nvSTARTVAL(2); 	//level
+	double dL = nvSTARTVAL(1); 	//level
+	double dT = nvSTARTVAL(2);	//trend
 	double dL1 = dL;		//holds previous level
 	
 
