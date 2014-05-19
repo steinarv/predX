@@ -75,6 +75,9 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, 
 	NumericVector nvX(Y); NumericVector nvDAYS(DAYS); int n = nvX.size(); 
 	int f = nvDAYS.size()-n; int s = as<int>(S); int d = 0; int m = as<int>(MULT);
 	int o = as<int>(OPTNOUT);
+
+	std::cout << nvSTARTVAL.size() << std::endl;
+	std::cout << s << std::endl;
 	
 	double xhat = 0; // Normalized x when outliers detected
 	double thold = as<double>(THOLD); //Number of standard deviations for treshold (0 < > 4)
@@ -89,9 +92,7 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, 
 	double dL = nvSTARTVAL(2); 	//level
 	double dL1 = dL;		//holds previous level
 	
-	std::cout << nvSTARTVAL.size() << std::endl;
-	std::cout << s << std::endl;
-	
+
 	for(int i=0;i<(s);i++)nvS(i)=nvSTARTVAL(i+3);
 	
 
