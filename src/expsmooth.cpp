@@ -10,7 +10,7 @@ SEXP HW_TRIPLE(SEXP Y, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP STARTVAL, SEXP NOU
 	int s = as<int>(S); int o = as<int>(OPTNOUT); int m = as<int>(MULT);
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
-	double alfa = nvPARAM(0); double gamma = nvPARAM(1); double beta = nvPARAM(2);
+	double alfa = nvPARAM(0); double beta = nvPARAM(1); double gamma = nvPARAM(1);
 	
 	NumericVector nvS(s); NumericMatrix nvFIL(n+f, o);
 	NumericVector nvSTARTVAL(STARTVAL);
