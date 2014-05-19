@@ -131,7 +131,7 @@ hw_simday <- function(y, days, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE,
 	
 	
 	startVal = rep(NA, s+3) #Level0 Trend0, and Seas1:s
-	startVal[1] <- var(y); startVal[2] <- mean(y[1:nn]); startVal[3] <- 0
+	startVal[1] <- sd(y); startVal[2] <- mean(y[1:nn]); startVal[3] <- 0
 	
 	if(mult){
 		startVal[4:(s+3)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y[1:nn])
