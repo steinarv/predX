@@ -76,7 +76,7 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, 
 	int f = nvDAYS.size()-n; int s = as<int>(S); int d = 0; int m = as<int>(MULT);
 	int o = as<int>(OPTNOUT);
 
-	std::cout << nvSTARTVAL.size() << std::endl;
+	
 	std::cout << s << std::endl;
 	
 	double xhat = 0; // Normalized x when outliers detected
@@ -87,6 +87,7 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, 
 	
 	NumericVector nvS(s); NumericMatrix nvFIL(n+f, o);
 	NumericVector nvSTARTVAL(STARTVAL);
+	std::cout << nvSTARTVAL.size() << std::endl;
 	double dVAR = nvSTARTVAL(0); 	//variance
 	double dT = nvSTARTVAL(1);	//trend
 	double dL = nvSTARTVAL(2); 	//level
