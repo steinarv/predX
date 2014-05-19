@@ -130,13 +130,13 @@ hw_simday <- function(y, days, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE,
 	nn <- min(10*s, n) #Number of days used of initializing seasonal component
 	
 	
-	startVal = rep(NA, s+2) #Level0 Trend0, and Seas1:s
-	startVal[1] <- mean(y[1:nn]); startVal[2] <- 0
+	startVal = rep(NA, s+3) #Level0 Trend0, and Seas1:s
+	startVal[1] <- var(y); startVal[2] <- mean(y[1:nn]); startVal[3] <- 0
 	
 	if(mult){
-		startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y[1:nn])
+		startVal[4:(s+3)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y[1:nn])
 	}else{
-		startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x-mean(y[1:nn])
+		startVal[4:(s+3)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x-mean(y[1:nn])
 	}
 
 	
