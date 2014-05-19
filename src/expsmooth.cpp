@@ -177,7 +177,10 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, 
 		}else{
 			nvFIL(i, 0) = dL+dT*(i-n)+nvS(d);
 		}
-	}
+		
+	} // En if multiplicative/additive
+	
+	} // End for
 	
 	return(wrap(nvFIL));
 }
