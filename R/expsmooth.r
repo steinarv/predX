@@ -77,7 +77,6 @@ hw_triple <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7, trend=
 		opt$par <- 1/(1+exp(-opt$par))
 	}
 	
-	print(param_)
 	fit <- .Call("HW_TRIPLE", Y=y, S=s, OPTNOUT=1, PARAM=param_, 
 			        STARTVAL=startVal, NOUT=nout, MULT=mult, PACKAGE = "predX" )
 	
