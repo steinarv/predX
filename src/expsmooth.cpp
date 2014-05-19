@@ -100,7 +100,8 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, 
 	
 
 	for(int i=1;i<(n+f);i++){
-	
+	std::cout << i << std::endl;
+	sleep(1);
 		d = nvDAYS(i);
 		
 		// If multiplicative........................................................................
