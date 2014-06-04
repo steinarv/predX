@@ -15,9 +15,9 @@ aggprod <- function(x)prod(1+x)-1
 
 #------------ Inverse unity function ------------------------------------------
 INVunityf <- function(x){
-	x <- sapply(x, FUN=function(z)min(z,0.9999)) #Ensure numeric value in return
-	max(-100000000, log(x/(1-x)))
-	}
+  x <- sapply(x, FUN=function(z)max(min(z,0.9999999), 0.00000001)) #Ensure numeric value in return
+  log(x/(1-x))
+}
 # .............................................................................
 
 # ----------- Score functiona -------------------------------------------------
