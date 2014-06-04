@@ -155,6 +155,8 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 		w1 <- param[length(param)-1]; w2 <- param[length(param)]
 	}
 	
+	print(paste0("w1 = ", w1, ", w2 = ", w2))
+	
 	# Start values
 	startVal = rep(NA, s+3) #Level0 Trend0, and Seas1:s
 	startVal[1] <- sd(y); startVal[2] <- mean(y[1:nn]); startVal[3] <- 0
@@ -197,7 +199,7 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	}else{
 		param_ <- c(param[1], INVunityf(0), param[2], w1, w2)
 	}
-
+	print(paste0("w1 = ", w1, ", w2 = ", w2))
 	print(param_)
 	fit <- .Call("HW_SIMDAY", Y=y, DAYS=days, L=l, S=s, OPTNOUT=1, PARAM=param_, THOLD=thold, 	
 			        STARTVAL=startVal, MULT=mult, PACKAGE = "predX" )
