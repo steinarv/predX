@@ -513,7 +513,7 @@ SEXP SIMDAYSMOOTHLEVELINPUT2(SEXP Y, SEXP L, SEXP DAYS, SEXP S, SEXP OPTNOUT, SE
 			r1=0.1*pow(xhat-nvS(d)-dL1, 2)+0.9*r1; 	//Accuracy of smoothed level
 			r2=0.1*pow(xhat-nvS(d)-dL2, 2)+0.9*r2;	//Accuracy of input level
 			
-			w1=(1-r1/(r1+r2)); w2=1-w1; //Weights
+		//	w1=(1-r1/(r1+r2)); w2=1-w1; //Weights
 			
 			// ------------ delete ------------
 			//std::cout << "w1 and w2: " << w1 << ", " << w2 << std::endl;
