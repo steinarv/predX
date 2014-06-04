@@ -136,12 +136,13 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	nn <- min(10*s, n) #Number of days used of initializing seasonal component
 	
 	# Parameter vector, is transformed trough 1/(1+exp(-x)) in c++ to ensure 0<>1
-	if(is.null(param)){ 
-		 param <-  INVunityf(rep(0.25, 2+trend+optw*2))
-	}else{
-		param <- INVunityf(param)
+	if(is.null(param) & doOptim){ 
+		param <-  rep(0.25, 2+trend+optw*2)
+	}else if(is.null(param)){
+		stop("Not enough parameters to run model")	
 	}
 	
+	param <- INVunityf(param)
 	
 	# Level vector and its weights
 	if(is.null(l)){
@@ -183,21 +184,21 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 
 		
 		param <- opt$par
-		print(param)
-	}else{
-		opt <- list(value=NA, par=numeric(5))	
-	}	
+		if(trend & optw){
+			param_ <- param
+		}else if(trend){
+			param_ <- c(param[1], param[2], param[3], w1, w2)
+		}else if(optw){
+			param_ <- c(param[1], INVunityf(0), param[2], param[3], param[4])
+		}else{
+			param_ <- c(param[1], INVunityf(0), param[2], w1, w2)
+		}
+			opt <- list(value=NA, par=numeric(5))	
 	
-	
-	if(trend & optw){
-		param_ <- param
-	}else if(trend){
-		param_ <- c(param[1], param[2], param[3], w1, w2)
-	}else if(optw){
-		param_ <- c(param[1], INVunityf(0), param[2], param[3], param[4])
-	}else{
-		param_ <- c(param[1], INVunityf(0), param[2], w1, w2)
 	}
+	
+	
+
 	print(paste0("w1 = ", w1, ", w2 = ", w2))
 	print(param_)
 	fit <- .Call("HW_SIMDAY", Y=y, DAYS=days, L=l, S=s, OPTNOUT=1, PARAM=param_, THOLD=thold, 	
