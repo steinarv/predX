@@ -195,9 +195,10 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	
 	fit <- .Call("HW_SIMDAY", Y=y, DAYS=days, L=l, S=s, OPTNOUT=1, PARAM=param_, THOLD=thold, 	
 			        STARTVAL=startVal, MULT=mult, PACKAGE = "predX" )
-	
-	opt$par <- 1/(1+exp(-param_))
-	names(opt$par) <- c("alpha", "beta", "gamma", "w1", "w2")
+	#Parameters is passed by address and param_ is altered (1/(1+exp(-x)))
+
+  	opt$par <- param_
+  	names(opt$par) <- c("alpha", "beta", "gamma", "w1", "w2")
 	
 	lOut <- list(startVal=startVal, fitIn=fit[1:n, 1])
 	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))
