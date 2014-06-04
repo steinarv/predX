@@ -103,32 +103,45 @@ hw_triple <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7, trend=
 #		with irregularity in the seasonal component. This model also				#
 #		tracks the prediction error which makes it possible to attempt				#
 #		identifying outliers based on the size of the prediction error.				#
+#		Finaly this model also allows for passing external guesses 				#
+#		for the level and weights to be assigned to it.						#
 #													#
 #########################################################################################################
 
-OPThw_simday <- function(y, ymat, days, s, opt.nout, param, trend, thold, startVal, scorefunc, trim, mult){
+OPThw_simday <- function(y, ymat, days, s, opt.nout, param, trend, w1, w2, optw, thold, startVal, scorefunc, trim, mult){
 	n <- length(y)
 	
-	if(trend){
-	  param_ <- param
-	}else{
-	  param_ <- c(param[1], -1000, param[2])
-	}
-	
+	if(trend & optw){
+  		param_ <- param
+	}else if(trend){
+  		param_ <- c(param[1], param[2], param[3], w1, w2)
+  	}else if(optw){
+  		param_ <- c(param[1], INVunityf(0), param[2], param[3], param[4])
+  	}else{
+  		param_ <- c(param[1], INVunityf(0), param[2], w1, w2)
+  	}	
 
-	fitval <- .Call("HW_SIMDAY", Y=y, DAYS=days, S=s, OPTNOUT=opt.nout, PARAM=param_, THOLD=thold,
+
+	fitval <- .Call("HW_SIMDAY", Y=y, DAYS=days, L=l, S=s, OPTNOUT=opt.nout, PARAM=param_, THOLD=thold,
 			             STARTVAL=startVal, MULT=mult, PACKAGE = "predX")
 			
 	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], fitval[(s*2+1):(n-opt.nout+1), ], trim=trim)
 
 }
 
-hw_simday <- function(y, days, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE, thold=3, 
+hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE, thold=3, optw=FALSE,
 			mult=FALSE, scorefunc=fMSE, trim=0, solver.method="Nelder-Mead", solver.control=list()){
 			
 	n <- length(y); nout <- length(days)-n; s <- length(unique(days));
 	nn <- min(10*s, n) #Number of days used of initializing seasonal component
 	
+	if(is.null(l)){
+		l <- numeric(n+nout) #Pass null vector
+		w1 <- INVunityf(1); w2 <- INVunityf(0); #Lock weights
+		optw=FALSE
+	}else if(!optw){
+		w1 <- w2 <- INVunityf(0.5)
+	}
 	
 	startVal = rep(NA, s+3) #Level0 Trend0, and Seas1:s
 	startVal[1] <- sd(y); startVal[2] <- mean(y[1:nn]); startVal[3] <- 0
@@ -140,10 +153,12 @@ hw_simday <- function(y, days, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE,
 	}
 
 	
-	nparam <- (2+trend)
+	nparam <- (2+trend+optw*2)
 	if(is.null(param) || length(param)!=nparam){ 
-	   param <-  INVunityf(rep(0.25, nparam))
+	   param <-  INVunityf(c(rep(0.25, nparam)))
 	}else{param <- INVunityf(param)}
+	
+	if(!optw)param <- c(param)
 	
 
 	if(doOptim){
@@ -155,22 +170,30 @@ hw_simday <- function(y, days, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE,
 		}
 		
 
-		opt <- optim(param, OPThw_simday, y=y, ymat=ymat, days=days, s=s, opt.nout=opt.nout, 
-		    	trend=trend, thold=thold, startVal=startVal, scorefunc=scorefunc, trim=trim, 
+		opt <- optim(param, OPThw_simday, y=y, ymat=ymat, days=days, s=s, opt.nout=opt.nout, optw=optw,
+		    	trend=trend, w1=w1, w2=w2, thold=thold, startVal=startVal, scorefunc=scorefunc, trim=trim, 
 			mult=mult, method=solver.method, control=solver.control)
 
 		
 		param <- opt$par
-		if(trend){
-	  		param_ <- param
-		}else{
-	  		param_ <- c(param[1], -1000, param[2])
-	  	}
 		
+		if(trend & optw){
+	  		param_ <- param
+		}else if(trend){
+	  		param_ <- c(param[1], param[2], param[3], w1, w2)
+	  	}else if(optw){
+	  		param_ <- c(param[1], INVunityf(0), param[2], param[3], param[4])
+	  	}else{
+	  		param_ <- c(param[1], INVunityf(0), param[2], w1, w2)
+	  	}
+	 
 		opt$par <- 1/(1+exp(-opt$par))
+	}else{
+	 param_ <- param
 	}
 	
-	fit <- .Call("HW_SIMDAY", Y=y, DAYS=days, S=s, OPTNOUT=1, PARAM=param_, THOLD=thold, 	
+	
+	fit <- .Call("HW_SIMDAY", Y=y, DAYS=days, L=l, S=s, OPTNOUT=1, PARAM=param_, THOLD=thold, 	
 			        STARTVAL=startVal, MULT=mult, PACKAGE = "predX" )
 	
 	lOut <- list(startVal=startVal, fitIn=fit[1:n, 1])
