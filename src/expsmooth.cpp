@@ -187,6 +187,8 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 			nvS(d)=gamma*(xhat-dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
 			
 		}else{
+			std::cout << "w1: " << w1 << ", dLfil: " << dLfil << ", w2: " << w2 << ", nvL(i): " << nvL(i) <<
+			", dT: " << dT << ", (i-n): " << (i-n) << ", nvS(d): " << nvS(d) << std::endl;
 			nvFIL(i, 0) = w1*dLfil+w2*nvL(i)+dT*(i-n)+nvS(d);
 		}
 		
