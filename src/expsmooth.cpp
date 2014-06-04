@@ -69,12 +69,13 @@ SEXP HW_TRIPLE(SEXP Y, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP STARTVAL, SEXP NOU
 }
 
 
-//  ---------------- Holt Winters similar day exponential smoothing with error tracking and outlier detection -----------------
-SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, SEXP STARTVAL, SEXP MULT) {
+//  -- Holt Winters similar day exponential smoothing with external level information, error tracking and outlier detection ----------
+SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, SEXP STARTVAL, SEXP MULT) {
 	
-	NumericVector nvX(Y); NumericVector nvDAYS(DAYS); int n = nvX.size(); 
-	int f = nvDAYS.size()-n; int s = as<int>(S); int d = 0; int m = as<int>(MULT);
-	int o = as<int>(OPTNOUT);
+	NumericVector nvX(Y); NumericVector nvDAYS(DAYS); NumericVector nvL(L);
+	
+	int n = nvX.size(); int f = nvDAYS.size()-n; int s = as<int>(S); 
+	int d = 0; int m = as<int>(MULT); int o = as<int>(OPTNOUT);
 
 	
 	double xhat = 0; // Normalized x when outliers detected
@@ -82,16 +83,19 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, 
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
 	double alfa = nvPARAM(0); double beta = nvPARAM(1); double gamma = nvPARAM(2);
+	double w1 = nvPARAM(3); double w2 = nvPARAM(4); //w1 = 1 and w2 = 0 when no external level is supplied
 	
 	NumericVector nvS(s); NumericMatrix nvFIL(n+f, o);
 	NumericVector nvSTARTVAL(STARTVAL);
+	
 	double dVAR = nvSTARTVAL(0); 	//variance
 	double dL = nvSTARTVAL(1); 	//level
-	double dT = nvSTARTVAL(2);	//trend
+	double dLfil = dL;		//filtered level
 	double dL1 = dL;		//holds previous level
 	
-
-	for(int i=0;i<(s);i++)nvS(i)=nvSTARTVAL(i+3);
+	double dT = nvSTARTVAL(2);	//trend
+	
+	for(int i=0;i<(s);i++)nvS(i)=nvSTARTVAL(i+3); //Seasonal effects
 	
 
 	for(int i=1;i<(n+f);i++){
@@ -130,12 +134,15 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, 
 			}
 			
 			dL1=dL;
-			dL=alfa*(xhat/nvS(d))+(1-alfa)*(dL+dT); 		//Level updated with value of today
+			dLfil=alfa*(xhat/nvS(d))+(1-alfa)*(dLfil+dT);	//Filtered level updated with value of today
+			dL=w1*dLfil+w2*nvL(i);
+			
 			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
+			
 			nvS(d)=gamma*(xhat/dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
 			
 		}else{
-			nvFIL(i, 0) = (dL+dT*(i-n))*nvS(d);
+			nvFIL(i, 0) = (w1*dLfil+w2*nvL(i)+dT*(i-n))*nvS(d);
 		}
 		
 		
@@ -172,12 +179,15 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, 
 			}
 			
 			dL1=dL;
-			dL=alfa*(xhat-nvS(d))+(1-alfa)*(dL+dT); 		//Level updated with value of today
+			dLfil=alfa*(xhat-nvS(d))+(1-alfa)*(dLfil+dT); 	//Filtered level updated with value of today
+			dL=w1*dLfil+w2*nvL(i);
+			
 			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
+			
 			nvS(d)=gamma*(xhat-dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
 			
 		}else{
-			nvFIL(i, 0) = dL+dT*(i-n)+nvS(d);
+			nvFIL(i, 0) = w1*dLfil+w2*nvL(i)+dT*(i-n)+nvS(d);
 		}
 		
 	} // En if multiplicative/additive
