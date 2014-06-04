@@ -176,22 +176,21 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 
 		
 		param <- opt$par
-		
-		if(trend & optw){
-	  		param_ <- param
-		}else if(trend){
-	  		param_ <- c(param[1], param[2], param[3], w1, w2)
-	  	}else if(optw){
-	  		param_ <- c(param[1], INVunityf(0), param[2], param[3], param[4])
-	  	}else{
-	  		param_ <- c(param[1], INVunityf(0), param[2], w1, w2)
-	  	}
-	 
-		
 	}else{
-	 param_ <- param
-	}
+		opt <- list(value=NA, par=numeric(5))	
+	}	
 	
+	
+	if(trend & optw){
+		param_ <- param
+	}else if(trend){
+		param_ <- c(param[1], param[2], param[3], w1, w2)
+	}else if(optw){
+		param_ <- c(param[1], INVunityf(0), param[2], param[3], param[4])
+	}else{
+		param_ <- c(param[1], INVunityf(0), param[2], w1, w2)
+	}
+
 	
 	fit <- .Call("HW_SIMDAY", Y=y, DAYS=days, L=l, S=s, OPTNOUT=1, PARAM=param_, THOLD=thold, 	
 			        STARTVAL=startVal, MULT=mult, PACKAGE = "predX" )
@@ -200,9 +199,8 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
   	opt$par <- param_
   	names(opt$par) <- c("alpha", "beta", "gamma", "w1", "w2")
 	
-	lOut <- list(startVal=startVal, fitIn=fit[1:n, 1])
-	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))
-	if(doOptim)lOut <- c(lOut, opt)
+	lOut <- c(opt, list(startVal=startVal, fitIn=fit[1:n, 1]))
+	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))	
 	
 	lOut
 
