@@ -158,8 +158,6 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	   param <-  INVunityf(c(rep(0.25, nparam)))
 	}else{param <- INVunityf(param)}
 	
-	if(!optw)param <- c(param)
-	
 
 	if(doOptim){
 		#Matrix used for efficient estimation of model predictions errors at each step in filtration
@@ -176,6 +174,7 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 
 		
 		param <- opt$par
+		print(param)
 	}else{
 		opt <- list(value=NA, par=numeric(5))	
 	}	
@@ -191,7 +190,7 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 		param_ <- c(param[1], INVunityf(0), param[2], w1, w2)
 	}
 
-	
+	print(param_)
 	fit <- .Call("HW_SIMDAY", Y=y, DAYS=days, L=l, S=s, OPTNOUT=1, PARAM=param_, THOLD=thold, 	
 			        STARTVAL=startVal, MULT=mult, PACKAGE = "predX" )
 	#Parameters is passed by address and param_ is altered (1/(1+exp(-x)))
