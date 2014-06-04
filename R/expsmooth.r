@@ -135,14 +135,27 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	n <- length(y); nout <- length(days)-n; s <- length(unique(days));
 	nn <- min(10*s, n) #Number of days used of initializing seasonal component
 	
+	# Parameter vector, is transformed trough 1/(1+exp(-x)) in c++ to ensure 0<>1
+	nparam <- (2+trend+optw*2)
+	if(is.null(param) || length(param)!=nparam){ 
+		 param <-  INVunityf(c(rep(0.25, nparam)))
+	}else{
+		param <- INVunityf(param)
+	}
+	
+	
+	# Level vector and its weights
 	if(is.null(l)){
 		l <- numeric(n+nout) #Pass null vector
 		w1 <- INVunityf(1); w2 <- INVunityf(0); #Lock weights
 		optw=FALSE
 	}else if(!optw){
 		w1 <- w2 <- INVunityf(0.5)
+	}else{
+		w1 <- param[length(param)-1]; w2 <- param[length(param)]
 	}
 	
+	# Start values
 	startVal = rep(NA, s+3) #Level0 Trend0, and Seas1:s
 	startVal[1] <- sd(y); startVal[2] <- mean(y[1:nn]); startVal[3] <- 0
 	
@@ -153,12 +166,7 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	}
 
 	
-	nparam <- (2+trend+optw*2)
-	if(is.null(param) || length(param)!=nparam){ 
-	   param <-  INVunityf(c(rep(0.25, nparam)))
-	}else{param <- INVunityf(param)}
-	
-
+	# Optimization
 	if(doOptim){
 		#Matrix used for efficient estimation of model predictions errors at each step in filtration
 		if(opt.nout>1){
