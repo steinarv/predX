@@ -136,9 +136,8 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	nn <- min(10*s, n) #Number of days used of initializing seasonal component
 	
 	# Parameter vector, is transformed trough 1/(1+exp(-x)) in c++ to ensure 0<>1
-	nparam <- (2+trend+optw*2)
-	if(is.null(param) || length(param)!=nparam){ 
-		 param <-  INVunityf(c(rep(0.25, nparam)))
+	if(is.null(param)){ 
+		 param <-  INVunityf(rep(0.25, 2+trend+optw*2))
 	}else{
 		param <- INVunityf(param)
 	}
