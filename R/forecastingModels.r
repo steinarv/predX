@@ -43,14 +43,6 @@ filterHS <- function(x, n.ahead=1, ... ){
 #	.Call("HTeGARCH", x, var(x), c( log(var(x))*0.25-0.016, 0.02, 0, 0.75 ), 1, PACKAGE = "predX" )
 #}
 
-INVunityf <- function(x){
-	x <- sapply(x, FUN=function(z)min(z,0.9999)) #Ensure numeric value in return
-	log(x/(1-x))
-	}
-
-fMSE <- function(y, x, trim=0)mean((y-x)^2, trim=trim)
-fABS <- function(y, x, trim=0)mean(abs(y-x), trim=trim)
-
 OPTexsm1 <- function(y, param, startVal, scorefunc=fMSE){
 	n <- length(y)
 	fitval <- .Call("EXPSMOOTH1", Y=y, PARAM=param, STARTVAL=startVal, NOUT=1, PACKAGE = "predX")
