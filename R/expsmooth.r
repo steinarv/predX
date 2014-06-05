@@ -182,9 +182,9 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 		}
 		
 
-		opt <- optim(param, OPThw_simday, y=y, ymat=ymat, days=days, l=l, s=s, opt.nout=opt.nout, setw=setw,
-		    	trend=trend, w1=w1, w2=w2, thold=thold, startVal=startVal, scorefunc=scorefunc, trim=trim, 
-			mult=mult, method=solver.method, control=solver.control)
+		opt <- optim(param, OPThw_simday, y=y, ymat=ymat, days=days[1:n], l=l[1:n], s=s, opt.nout=opt.nout, 
+			setw=setw, trend=trend, w1=w1, w2=w2, thold=thold, startVal=startVal, scorefunc=scorefunc, 
+			trim=trim, mult=mult, method=solver.method, control=solver.control)
 
 		
 		param <- opt$par
@@ -218,6 +218,8 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	
 	lOut <- c(opt, list(startVal=startVal, fitIn=fit[1:n, 1]))
 	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))	
+	if(!doOptim)lOut$value <-
+	scorefunc(y[(s*2+1):(n-opt.nout+1)], lOut$fitIn[(s*2+1):(n-opt.nout+1)], trim=trim)
 	
 	lOut
 
