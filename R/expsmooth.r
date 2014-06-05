@@ -139,7 +139,7 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	
 	nparam <- 2+trend+setw*2
 	# Parameter vector, is transformed trough 1/(1+exp(-x)) in c++ to ensure 0<>1
-	if(length(param)!=nparam & doOptim)	#Bad param vector for optimization 
+	if(length(param)!=nparam & doOptim){	#Bad param vector for optimization 
 		param <-  rep(0.25, nparam) #Create start values
 	}else if(length(param)!=nparam){ #Not enough parameters and no optimization planed.
 		stop("Not enough parameters to run model")	
