@@ -458,6 +458,8 @@ SEXP SIMDAYSMOOTHLEVELINPUT2(SEXP Y, SEXP L, SEXP DAYS, SEXP S, SEXP OPTNOUT, SE
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
 	double alfa = nvPARAM(0); double gamma = nvPARAM(1);
 	
+	std::cout << "alfa: " << alfa << ", gamma: " << gamma << std::endl;
+	
 	NumericVector nvS(s); NumericMatrix nvFIL(n+f, o);
 	
 	NumericVector nvSTARTVAL(STARTVAL);
