@@ -140,9 +140,9 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	
 	nparam <- 2+trend+setw*2
 	# Parameter vector, is transformed trough 1/(1+exp(-x)) in c++ to ensure 0<>1
-	if(length(param)!=nparam & doOptim){	#Bad param vector for optimization 
+	if(length(param)<nparam & doOptim){	#Bad param vector for optimization 
 		param <-  rep(0.25, nparam) #Create start values
-	}else if(length(param)!=nparam){ #Not enough parameters and no optimization planed.
+	}else if(length(param)<nparam){ #Not enough parameters and no optimization planed.
 		stop("Not enough parameters to run model")	
 	}
 	
@@ -153,7 +153,7 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 		l <- numeric(n+nout) #Pass null vector
 		w1 <- INVunityf(1); w2 <- INVunityf(0); #Lock weights
 		setw=FALSE
-	}else if(!setw){
+	}else if(!setw & length(param)<(nparam+2)){
 		w1 <- w2 <- INVunityf(0.5)
 	}else{
 		w1 <- param[length(param)-1]; w2 <- param[length(param)]
