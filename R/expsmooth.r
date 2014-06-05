@@ -133,6 +133,7 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 			mult=FALSE, scorefunc=fMSE, trim=0, solver.method="Nelder-Mead", solver.control=list()){
 	
 	#setw needs to be TRUE if w1 and w2 is either provided through param or to be optimized
+	#if Trend is True a parameter for the trend coefficient must be provided
 	
 	n <- length(y); nout <- length(days)-n; s <- length(unique(days));
 	nn <- min(10*s, n) #Number of days used of initializing seasonal component
@@ -187,18 +188,22 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 
 		
 		param <- opt$par
-		if(trend & setw){
-			param_ <- param
-		}else if(trend){
-			param_ <- c(param[1], param[2], param[3], w1, w2)
-		}else if(setw){
-			param_ <- c(param[1], INVunityf(0), param[2], param[3], param[4])
-		}else{
-			param_ <- c(param[1], INVunityf(0), param[2], w1, w2)
-		}
-			opt <- list(value=NA, par=numeric(5))	
-	
+		
+	}else{
+		opt <- list(value=NA, par=numeric(5))
 	}
+	
+	
+	if(trend & setw){
+		param_ <- param
+	}else if(trend){
+		param_ <- c(param[1], param[2], param[3], w1, w2)
+	}else if(setw){
+		param_ <- c(param[1], INVunityf(0), param[2], param[3], param[4])
+	}else{
+		param_ <- c(param[1], INVunityf(0), param[2], w1, w2)
+	}
+			
 	
 	
 
