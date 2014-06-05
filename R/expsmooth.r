@@ -182,7 +182,7 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 		}
 		
 
-		opt <- optim(param, OPThw_simday, y=y, ymat=ymat, days=days[1:n], l=l[1:n], s=s, opt.nout=opt.nout, 
+		opt <- optim(param[1:nparam], OPThw_simday, y=y, ymat=ymat, days=days[1:n], l=l[1:n], s=s, opt.nout=opt.nout, 
 			setw=setw, trend=trend, w1=w1, w2=w2, thold=thold, startVal=startVal, scorefunc=scorefunc, 
 			trim=trim, mult=mult, method=solver.method, control=solver.control)
 
