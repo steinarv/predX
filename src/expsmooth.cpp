@@ -85,8 +85,8 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 	double alfa = nvPARAM(0); double beta = nvPARAM(1); double gamma = nvPARAM(2);
 	double w1 = nvPARAM(3); double w2 = nvPARAM(4); //w1 = 1 and w2 = 0 when no external level is supplied
 	
-	std::cout << "alfa: " << alfa << ", beta: " << beta << ", gamma: " << gamma <<
-	", w1: " << w1 << ", w2: " << w2 << std::endl;
+	/*std::cout << "alfa: " << alfa << ", beta: " << beta << ", gamma: " << gamma <<
+	", w1: " << w1 << ", w2: " << w2 << std::endl;*/
 	
 	NumericVector nvS(s); NumericMatrix nvFIL(n+f, o);
 	NumericVector nvSTARTVAL(STARTVAL);
