@@ -108,14 +108,14 @@ hw_triple <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7, trend=
 #													#
 #########################################################################################################
 
-OPThw_simday <- function(y, ymat, days, l=l, s, opt.nout, param, trend, w1, w2, optw, thold, startVal, scorefunc, trim, mult){
+OPThw_simday <- function(y, ymat, days, l=l, s, opt.nout, param, trend, w1, w2, setw, thold, startVal, scorefunc, trim, mult){
 	n <- length(y)
 	
-	if(trend & optw){
+	if(trend & setw){
   		param_ <- param
 	}else if(trend){
   		param_ <- c(param[1], param[2], param[3], w1, w2)
-  	}else if(optw){
+  	}else if(setw){
   		param_ <- c(param[1], INVunityf(0), param[2], param[3], param[4])
   	}else{
   		param_ <- c(param[1], INVunityf(0), param[2], w1, w2)
@@ -129,16 +129,19 @@ OPThw_simday <- function(y, ymat, days, l=l, s, opt.nout, param, trend, w1, w2, 
 
 }
 
-hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE, thold=3, optw=FALSE,
+hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE, thold=3, setw=FALSE,
 			mult=FALSE, scorefunc=fMSE, trim=0, solver.method="Nelder-Mead", solver.control=list()){
-			
+	
+	#setw needs to be TRUE if w1 and w2 is either provided through param or to be optimized
+	
 	n <- length(y); nout <- length(days)-n; s <- length(unique(days));
 	nn <- min(10*s, n) #Number of days used of initializing seasonal component
 	
+	nparam <- 2+trend+setw*2
 	# Parameter vector, is transformed trough 1/(1+exp(-x)) in c++ to ensure 0<>1
-	if(is.null(param) & doOptim){ 
-		param <-  rep(0.25, 2+trend+optw*2)
-	}else if(is.null(param)){
+	if(length(param)!=nparam & doOptim)	#Bad param vector for optimization 
+		param <-  rep(0.25, nparam) #Create start values
+	}else if(length(param)!=nparam){ #Not enough parameters and no optimization planed.
 		stop("Not enough parameters to run model")	
 	}
 	
@@ -148,8 +151,8 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	if(is.null(l)){
 		l <- numeric(n+nout) #Pass null vector
 		w1 <- INVunityf(1); w2 <- INVunityf(0); #Lock weights
-		optw=FALSE
-	}else if(!optw){
+		setw=FALSE
+	}else if(!setw){
 		w1 <- w2 <- INVunityf(0.5)
 	}else{
 		w1 <- param[length(param)-1]; w2 <- param[length(param)]
@@ -178,17 +181,17 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 		}
 		
 
-		opt <- optim(param, OPThw_simday, y=y, ymat=ymat, days=days, l=l, s=s, opt.nout=opt.nout, optw=optw,
+		opt <- optim(param, OPThw_simday, y=y, ymat=ymat, days=days, l=l, s=s, opt.nout=opt.nout, setw=setw,
 		    	trend=trend, w1=w1, w2=w2, thold=thold, startVal=startVal, scorefunc=scorefunc, trim=trim, 
 			mult=mult, method=solver.method, control=solver.control)
 
 		
 		param <- opt$par
-		if(trend & optw){
+		if(trend & setw){
 			param_ <- param
 		}else if(trend){
 			param_ <- c(param[1], param[2], param[3], w1, w2)
-		}else if(optw){
+		}else if(setw){
 			param_ <- c(param[1], INVunityf(0), param[2], param[3], param[4])
 		}else{
 			param_ <- c(param[1], INVunityf(0), param[2], w1, w2)
