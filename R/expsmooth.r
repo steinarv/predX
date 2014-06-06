@@ -208,7 +208,7 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	
 
 	#print(paste0("w1 = ", w1, ", w2 = ", w2))
-	print(param_)
+	print(1/(1+exp(-param_)))
 	fit <- .Call("HW_SIMDAY", Y=y, DAYS=days, L=l, S=s, OPTNOUT=1, PARAM=param_, THOLD=thold, 	
 			        STARTVAL=startVal, MULT=mult, PACKAGE = "predX" )
 	#Parameters is passed by address and param_ is altered (1/(1+exp(-x)))
