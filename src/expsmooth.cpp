@@ -206,7 +206,8 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 
 // --- Holt Winters similar day exponential smoothing with external level information, explanatory variable for level, ---
 // --- error tracking and outlier detection ------------------------------------------------------------------------------
-SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, SEXP STARTVAL, SEXP MULT) {
+SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP PARAM, 
+			SEXP THOLD, SEXP STARTVAL, SEXP MULT) {
 	
 	NumericVector nvX(Y); NumericVector nvDAYS(DAYS); NumericVector nvL(L);
 	
