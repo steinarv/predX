@@ -224,3 +224,134 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	lOut
 
 }
+
+
+
+#########################################################################################################
+#          					                                                        #
+#		A more advanced exponential smoothing for times series with				#
+#		with irregularity in the seasonal component. This model also				#
+#		tracks the prediction error which makes it possible to attempt				#
+#		identifying outliers based on the size of the prediction error.				#
+#		Finaly this model also allows for passing external guesses 				#
+#		for the level and weights to be assigned to it.	This model also 			#
+#		allows for a explanatory variable in the level equation					#
+#													#
+#########################################################################################################
+
+OPThw_simday_reg <- function(y, ymat, days, l=l, s, opt.nout, param, trend, w1, w2, setw, thold, startVal, scorefunc, trim, mult){
+	n <- length(y)
+	
+	if(trend & setw){
+  		param_ <- param
+	}else if(trend){
+  		param_ <- c(param[1], param[2], param[3], w1, w2)
+  	}else if(setw){
+  		param_ <- c(param[1], INVunityf(0), param[2], param[3], param[4])
+  	}else{
+  		param_ <- c(param[1], INVunityf(0), param[2], w1, w2)
+  	}	
+
+
+	fitval <- .Call("HW_SIMDAY_REG", Y=y, DAYS=days, L=l, S=s, OPTNOUT=opt.nout, PARAM=param_, THOLD=thold,
+			             STARTVAL=startVal, MULT=mult, PACKAGE = "predX")
+			
+	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], fitval[(s*2+1):(n-opt.nout+1), ], trim=trim)
+
+}
+
+hw_simday_reg <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE, thold=3, setw=FALSE,
+			mult=FALSE, scorefunc=fMSE, trim=0, solver.method="Nelder-Mead", solver.control=list()){
+	
+	#setw needs to be TRUE if w1 and w2 is either provided through param or to be optimized
+	#if Trend is True a parameter for the trend coefficient must be provided
+	
+	n <- length(y); nout <- length(days)-n; s <- length(unique(days));
+	nn <- min(10*s, n) #Number of days used of initializing seasonal component
+	
+	nparam <- 2+trend+setw*2
+	# Parameter vector, is transformed trough 1/(1+exp(-x)) in c++ to ensure 0<>1
+	if(length(param)<nparam & doOptim){	#Bad param vector for optimization 
+		param <-  rep(0.25, nparam) #Create start values
+	}else if(length(param)<nparam){ #Not enough parameters and no optimization planed.
+		stop("Not enough parameters to run model")	
+	}
+	
+	param <- INVunityf(param)
+	
+	# Level vector and its weights
+	if(is.null(l)){
+		l <- numeric(n+nout) #Pass null vector
+		w1 <- INVunityf(1); w2 <- INVunityf(0); #Lock weights
+		setw=FALSE
+	}else if(!setw & length(param)<(nparam+2)){
+		w1 <- w2 <- INVunityf(0.5)
+	}else{
+		w1 <- param[length(param)-1]; w2 <- param[length(param)]
+	}
+	
+	#print(paste0("w1 = ", w1, ", w2 = ", w2))
+	
+	# Start values
+	startVal = rep(NA, s+3) #Level0 Trend0, and Seas1:s
+	startVal[1] <- sd(y); startVal[2] <- mean(y[1:nn]); startVal[3] <- 0
+	
+	if(mult){
+		startVal[4:(s+3)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y[1:nn])
+	}else{
+		startVal[4:(s+3)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x-mean(y[1:nn])
+	}
+
+	
+	# Optimization
+	if(doOptim){
+		#Matrix used for efficient estimation of model predictions errors at each step in filtration
+		if(opt.nout>1){
+			ymat <- t(sapply(1:(n-opt.nout+1), FUN=function(x)y[x:(x+opt.nout-1)]))
+		}else{
+			ymat <- matrix(y, ncol=1)
+		}
+		
+
+		opt <- optim(param[1:nparam], OPThw_simday_reg, y=y, ymat=ymat, days=days[1:n], l=l[1:n], s=s, opt.nout=opt.nout, 
+			setw=setw, trend=trend, w1=w1, w2=w2, thold=thold, startVal=startVal, scorefunc=scorefunc, 
+			trim=trim, mult=mult, method=solver.method, control=solver.control)
+
+		
+		param <- opt$par
+		
+	}else{
+		opt <- list(value=NA, par=numeric(5))
+	}
+	
+	
+	if(trend & setw){
+		param_ <- param
+	}else if(trend){
+		param_ <- c(param[1], param[2], param[3], w1, w2)
+	}else if(setw){
+		param_ <- c(param[1], INVunityf(0), param[2], param[3], param[4])
+	}else{
+		param_ <- c(param[1], INVunityf(0), param[2], w1, w2)
+	}
+			
+	
+	
+
+	
+	if(doOptim)opt.nout <- 1 #Save some time in final filtration
+	fit <- .Call("HW_SIMDAY_REG", Y=y, DAYS=days, L=l, S=s, OPTNOUT=opt.nout, PARAM=param_, THOLD=thold, 	
+			        STARTVAL=startVal, MULT=mult, PACKAGE = "predX" )
+	#Parameters is passed by address and param_ is altered (1/(1+exp(-x)))
+
+  	opt$par <- param_
+  	names(opt$par) <- c("alpha", "beta", "gamma", "w1", "w2")
+	
+	lOut <- c(opt, list(startVal=startVal, fitIn=fit[1:n, 1]))
+	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))	
+	if(!doOptim)lOut$value <-
+	scorefunc(y[(s*2+1):(n-opt.nout+1)], lOut$fitIn[(s*2+1):(n-opt.nout+1)], trim=trim)
+	
+	lOut
+
+}
