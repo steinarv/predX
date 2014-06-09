@@ -201,3 +201,139 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 	
 	return(wrap(nvFIL));
 }
+
+
+
+// --- Holt Winters similar day exponential smoothing with external level information, explanatory variable for level, ---
+// --- error tracking and outlier detection ------------------------------------------------------------------------------
+SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, SEXP STARTVAL, SEXP MULT) {
+	
+	NumericVector nvX(Y); NumericVector nvDAYS(DAYS); NumericVector nvL(L);
+	
+	int n = nvX.size(); int f = nvDAYS.size()-n; int s = as<int>(S); 
+	int d = 0; int m = as<int>(MULT); int o = as<int>(OPTNOUT);
+
+	
+	double xhat = 0; // Normalized x when outliers detected
+	double thold = as<double>(THOLD); //Number of standard deviations for treshold (0 < > 4)
+	
+	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
+	double alfa = nvPARAM(0); double beta = nvPARAM(1); double gamma = nvPARAM(2);
+	double w1 = nvPARAM(3); double w2 = nvPARAM(4); //w1 = 1 and w2 = 0 when no external level is supplied
+	
+	/*std::cout << "alfa: " << alfa << ", beta: " << beta << ", gamma: " << gamma <<
+	", w1: " << w1 << ", w2: " << w2 << std::endl;*/
+	
+	NumericVector nvS(s); NumericMatrix nvFIL(n+f, o);
+	NumericVector nvSTARTVAL(STARTVAL);
+	
+	double dVAR = nvSTARTVAL(0); 	//variance
+	double dL = nvSTARTVAL(1); 	//level
+	double dLfil = dL;		//filtered level
+	double dL1 = dL;		//holds previous level
+	
+	double dT = nvSTARTVAL(2);	//trend
+	
+	for(int i=0;i<(s);i++)nvS(i)=nvSTARTVAL(i+3); //Seasonal effects
+	
+
+	for(int i=1;i<(n+f);i++){
+
+		d = nvDAYS(i);
+		
+		// If multiplicative........................................................................
+		if(m==1){
+			
+			
+		if(i<n){
+			dVAR = 0.06*pow(nvX(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
+			
+			if(i<=(n-o)){ //Make predictions "o" steps ahead
+				for(int j=0; j<o; j++){
+					d=nvDAYS(i+j);
+					nvFIL(i, j)=(dL+dT*(j+1))*nvS(d); //Predicted/Filtered value for "today"
+				}
+				d = nvDAYS(i);
+			}else{
+				nvFIL(i, 0)=(dL+dT)*nvS(d);
+			}
+			
+			// If x is more than two standard deviation of one step ahead prediction value we set it 
+			// equal to predicted value + thold*sd when updating equations
+			if( nvX(i) < (nvFIL(i, 0)-thold*sqrt(dVAR)) || 
+							nvX(i) > (nvFIL(i, 0)+thold*sqrt(dVAR)) ){
+				
+				nvX(i) < nvFIL(i, 0) ? 
+					xhat = (nvFIL(i, 0)-thold*sqrt(dVAR)) : 
+					xhat = (nvFIL(i, 0)+thold*sqrt(dVAR)) ;
+								
+			
+			}else{
+				xhat=nvX(i);
+			}
+			
+			dL1=dL;
+			dLfil=alfa*(xhat/nvS(d))+(1-alfa)*(dLfil+dT);	//Filtered level updated with value of today
+			dL=w1*dLfil+w2*nvL(i);
+			
+			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
+			
+			nvS(d)=gamma*(xhat/dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
+			
+		}else{
+			nvFIL(i, 0) = (w1*dLfil+w2*nvL(i)+dT*(i-n))*nvS(d);
+		}
+		
+		
+		
+		
+		// If additive .............................................................................	
+		}else{
+		
+		if(i<n){
+			dVAR = 0.06*pow(nvX(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
+			
+			if(i<=(n-o)){ //Make predictions "o" steps ahead
+				for(int j=0; j<o; j++){
+					d=nvDAYS(i+j);
+					nvFIL(i, j)=dL+dT*(j+1)+nvS(d); //Predicted/Filtered value for "today"
+				}
+				d = nvDAYS(i);
+			}else{
+				nvFIL(i, 0)=dL+dT+nvS(d);
+			}
+			
+			// If x is more than two standard deviation of one step ahead prediction value we set it 
+			// equal to predicted value + thold*sd when updating equations
+			if( nvX(i) < (nvFIL(i, 0)-thold*sqrt(dVAR)) || 
+							nvX(i) > (nvFIL(i, 0)+thold*sqrt(dVAR)) ){
+				
+				nvX(i) < nvFIL(i, 0) ? 
+					xhat = (nvFIL(i, 0)-thold*sqrt(dVAR)) : 
+					xhat = (nvFIL(i, 0)+thold*sqrt(dVAR)) ;
+								
+			
+			}else{
+				xhat=nvX(i);
+			}
+			
+			dL1=dL;
+			dLfil=alfa*(xhat-nvS(d))+(1-alfa)*(dLfil+dT); 	//Filtered level updated with value of today
+			dL=w1*dLfil+w2*nvL(i);
+			
+			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
+			
+			nvS(d)=gamma*(xhat-dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
+			
+		}else{
+			/*std::cout << "w1: " << w1 << ", dLfil: " << dLfil << ", w2: " << w2 << ", nvL(i): " << nvL(i) <<
+			", dT: " << dT << ", (i-n): " << (i-n) << ", nvS(d): " << nvS(d) << std::endl;*/
+			nvFIL(i, 0) = w1*dLfil+w2*nvL(i)+dT*(i-n)+nvS(d);
+		}
+		
+	} // En if multiplicative/additive
+	
+	} // End for
+	
+	return(wrap(nvFIL));
+}
