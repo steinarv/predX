@@ -232,9 +232,8 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 	double dVAR = nvSTARTVAL(0); 	//variance
 	double dL = nvSTARTVAL(1); 	//level
 	double dLfil = dL;		//filtered level
-	double dL1 = dL;		//holds previous level
-	
-	double dT = nvSTARTVAL(2);	//trend
+	double dLfil_ = dLfil;		//filtered level used in "o" steps prediction for optimization
+
 	
 	for(int i=0;i<(s);i++)nvS(i)=nvSTARTVAL(i+3); //Seasonal effects
 	
@@ -250,11 +249,15 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 		if(i<n){
 			dVAR = 0.06*pow(nvY(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
 			
-			nvFIL(i, 0)=(dL+dT)*nvS(d);
+			dLfil_ = dLfil+(1-alpha)*(beta*nvX(i)); //filter updated with exvar but not todays obs
+			nvFIL(i, 0)=(w1*dLfil_+w2*nvL(i))*nvS(d);
+			
 			if(i<=(n-o)){ //Make predictions "o" steps ahead
 				for(int j=1; j<o; j++){
+					dLfil_ = dLfil_+(1-alpha)*(beta*nvX(i+j));
 					d=nvDAYS(i+j);
-					nvFIL(i, j)=(dL+dT*(j+1))*nvS(d); //Predicted/Filtered value for "today"
+					nvFIL(i, j)=(w1*dLfil_+w2*nvL(i+j))*nvS(d); 
+					//Predicted/Filtered value for "today"
 				}
 				d = nvDAYS(i);
 			}
@@ -273,16 +276,17 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 				yhat=nvY(i);
 			}
 			
-			dL1=dL;
-			dLfil=alfa*(yhat/nvS(d))+(1-alfa)*(dLfil+dT);	//Filtered level updated with value of today
-			dL=w1*dLfil+w2*nvL(i);
 			
-			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
-			
+			dLfil=alfa*(yhat/nvS(d))+(1-alfa)*(dLfil+beta*nvX(i));	//Filtered level updated with value of today
+			dL=w1*dLfil+w2*nvL(i);					//and explanatory variable. The a weighted
+										//average between filtered level and
+										//level provided by user is computed
+										
 			nvS(d)=gamma*(yhat/dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
 			
 		}else{
-			nvFIL(i, 0) = (w1*dLfil+w2*nvL(i)+dT*(i-n))*nvS(d);
+			dLfil = dLfil+(1-alpha)*(beta*nvX(i));		//Makes it possible to exclude explanatory var for some i
+			nvFIL(i, 0) = (w1*dLfil+w2*nvL(i))*nvS(d);
 		}
 		
 		
@@ -294,11 +298,14 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 		if(i<n){
 			dVAR = 0.06*pow(nvY(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
 			
-			nvFIL(i, 0)=dL+dT+nvS(d);
+			dLfil_ = dLfil+(1-alpha)*(beta*nvX(i)); //filter updated with exvar but not todays obs
+			nvFIL(i, 0)=(w1*dLfil_+w2*nvL(i))+nvS(d);
+			
 			if(i<=(n-o)){ //Make predictions "o" steps ahead
 				for(int j=1; j<o; j++){
+					dLfil_ = dLfil_+(1-alpha)*(beta*nvX(i+j));
 					d=nvDAYS(i+j);
-					nvFIL(i, j)=dL+dT*(j+1)+nvS(d); //Predicted/Filtered value for "today"
+					nvFIL(i, j)=(w1*dLfil_+w2*nvL(i))+nvS(d); //Predicted/Filtered value for "today"
 				}
 				d = nvDAYS(i);
 			}
@@ -317,17 +324,17 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 				yhat=nvY(i);
 			}
 			
-			dL1=dL;
-			dLfil=alfa*(yhat-nvS(d))+(1-alfa)*(dLfil+dT); 	//Filtered level updated with value of today
-			dL=w1*dLfil+w2*nvL(i);
-			
-			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
+			dLfil=alfa*(yhat-nvS(d))+(1-alfa)*(dLfil+beta*nvX(i));	//Filtered level updated with value of today
+			dL=w1*dLfil+w2*nvL(i);					//and explanatory variable. The a weighted
+										//average between filtered level and
+										//level provided by user is computed
 			
 			nvS(d)=gamma*(yhat-dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
 			
 		}else{
 			/*std::cout << "w1: " << w1 << ", dLfil: " << dLfil << ", w2: " << w2 << ", nvL(i): " << nvL(i) <<
 			", dT: " << dT << ", (i-n): " << (i-n) << ", nvS(d): " << nvS(d) << std::endl;*/
+			dLfil = dLfil+(1-alpha)*(beta*nvX(i));		//Makes it possible to exclude explanatory var for some i
 			nvFIL(i, 0) = w1*dLfil+w2*nvL(i)+dT*(i-n)+nvS(d);
 		}
 		
