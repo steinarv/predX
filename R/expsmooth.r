@@ -316,11 +316,10 @@ hw_simday_reg <- function(y, days, l=NULL, x=NULL, param=NULL, doOptim=TRUE, opt
 	# Optimization
 	if(doOptim){
 
-		opt <- optim(param[1:nparam], OPThw_simday_reg, y=y, ymat=ymat, days=days[1:n], l=l[1:n], s=s, opt.nout=opt.nout, 
-			setw=setw, beta=beta, w1=w1, w2=w2, thold=thold, startVal=startVal, scorefunc=scorefunc, 
-			trim=trim, mult=mult, method=solver.method, control=solver.control)
+		opt <- optim(param[1:nparam], OPThw_simday_reg, y=y, ymat=ymat, days=days[1:n], l=l[1:n], s=s, x=x, 
+			opt.nout=opt.nout, setw=setw, beta=beta, w1=w1, w2=w2, thold=thold, startVal=startVal, 
+			scorefunc=scorefunc, trim=trim, mult=mult, method=solver.method, control=solver.control)
 
-		
 		param <- opt$par
 		
 	}else{
@@ -343,7 +342,7 @@ hw_simday_reg <- function(y, days, l=NULL, x=NULL, param=NULL, doOptim=TRUE, opt
 
 	
 	if(doOptim)opt.nout <- 1 #Save some time in final filtration
-	fit <- .Call("HW_SIMDAY_REG", Y=y, DAYS=days, L=l, S=s, X=rep(0, length(days)), OPTNOUT=opt.nout, PARAM=param_, THOLD=thold, 	
+	fit <- .Call("HW_SIMDAY_REG", Y=y, DAYS=days, L=l, S=s, X=x, OPTNOUT=opt.nout, PARAM=param_, THOLD=thold, 	
 			        STARTVAL=startVal, MULT=mult, PACKAGE = "predX" )
 	#Parameters is passed by address and param_ is altered (1/(1+exp(-x)))
 
