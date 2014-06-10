@@ -6,7 +6,7 @@ using namespace Rcpp ;
 
 // --------------------------------- Holt-Winters triple exponential smoothing ----------------------------------------
 SEXP HW_TRIPLE(SEXP Y, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP STARTVAL, SEXP NOUT, SEXP MULT) {
-	NumericVector nvX(Y); int n = nvX.size(); int f = as<int>(NOUT);
+	NumericVector nvY(Y); int n = nvY.size(); int f = as<int>(NOUT);
 	int s = as<int>(S); int o = as<int>(OPTNOUT); int m = as<int>(MULT);
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
@@ -35,9 +35,9 @@ SEXP HW_TRIPLE(SEXP Y, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP STARTVAL, SEXP NOU
 			
 			
 			dL1=dL;
-			dL=alfa*nvX(i)/nvS(i%s)+(1-alfa)*(dL+dT); 	//Level updated with value of today
+			dL=alfa*nvY(i)/nvS(i%s)+(1-alfa)*(dL+dT); 	//Level updated with value of today
 			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
-			nvS(i%s)=gamma*nvX(i)/dL+(1-gamma)*nvS(i%s); 	//Season updated
+			nvS(i%s)=gamma*nvY(i)/dL+(1-gamma)*nvS(i%s); 	//Season updated
 		}else{
 			nvFIL(i, 0) = (dL+dT)*nvS(i%s);
 		}
@@ -54,9 +54,9 @@ SEXP HW_TRIPLE(SEXP Y, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP STARTVAL, SEXP NOU
 			
 			
 			dL1=dL;
-			dL=alfa*(nvX(i)-nvS(i%s))+(1-alfa)*(dL+dT); 	//Level updated with value of today
+			dL=alfa*(nvY(i)-nvS(i%s))+(1-alfa)*(dL+dT); 	//Level updated with value of today
 			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
-			nvS(i%s)=gamma*(nvX(i)-dL)+(1-gamma)*nvS(i%s); 	//Season updated
+			nvS(i%s)=gamma*(nvY(i)-dL)+(1-gamma)*nvS(i%s); 	//Season updated
 		}else{
 			nvFIL(i, 0) = (dL+dT)+nvS(i%s);
 		}
@@ -72,13 +72,13 @@ SEXP HW_TRIPLE(SEXP Y, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP STARTVAL, SEXP NOU
 //  -- Holt Winters similar day exponential smoothing with external level information, error tracking and outlier detection ----------
 SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP THOLD, SEXP STARTVAL, SEXP MULT) {
 	
-	NumericVector nvX(Y); NumericVector nvDAYS(DAYS); NumericVector nvL(L);
+	NumericVector nvY(Y); NumericVector nvDAYS(DAYS); NumericVector nvL(L);
 	
-	int n = nvX.size(); int f = nvDAYS.size()-n; int s = as<int>(S); 
+	int n = nvY.size(); int f = nvDAYS.size()-n; int s = as<int>(S); 
 	int d = 0; int m = as<int>(MULT); int o = as<int>(OPTNOUT);
 
 	
-	double xhat = 0; // Normalized x when outliers detected
+	double yhat = 0; // Normalized x when outliers detected
 	double thold = as<double>(THOLD); //Number of standard deviations for treshold (0 < > 4)
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
@@ -110,7 +110,7 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 			
 			
 		if(i<n){
-			dVAR = 0.06*pow(nvX(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
+			dVAR = 0.06*pow(nvY(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
 			
 			if(i<=(n-o)){ //Make predictions "o" steps ahead
 				for(int j=0; j<o; j++){
@@ -124,25 +124,25 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 			
 			// If x is more than two standard deviation of one step ahead prediction value we set it 
 			// equal to predicted value + thold*sd when updating equations
-			if( nvX(i) < (nvFIL(i, 0)-thold*sqrt(dVAR)) || 
-							nvX(i) > (nvFIL(i, 0)+thold*sqrt(dVAR)) ){
+			if( nvY(i) < (nvFIL(i, 0)-thold*sqrt(dVAR)) || 
+							nvY(i) > (nvFIL(i, 0)+thold*sqrt(dVAR)) ){
 				
-				nvX(i) < nvFIL(i, 0) ? 
-					xhat = (nvFIL(i, 0)-thold*sqrt(dVAR)) : 
-					xhat = (nvFIL(i, 0)+thold*sqrt(dVAR)) ;
+				nvY(i) < nvFIL(i, 0) ? 
+					yhat = (nvFIL(i, 0)-thold*sqrt(dVAR)) : 
+					yhat = (nvFIL(i, 0)+thold*sqrt(dVAR)) ;
 								
 			
 			}else{
-				xhat=nvX(i);
+				yhat=nvY(i);
 			}
 			
 			dL1=dL;
-			dLfil=alfa*(xhat/nvS(d))+(1-alfa)*(dLfil+dT);	//Filtered level updated with value of today
+			dLfil=alfa*(yhat/nvS(d))+(1-alfa)*(dLfil+dT);	//Filtered level updated with value of today
 			dL=w1*dLfil+w2*nvL(i);
 			
 			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
 			
-			nvS(d)=gamma*(xhat/dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
+			nvS(d)=gamma*(yhat/dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
 			
 		}else{
 			nvFIL(i, 0) = (w1*dLfil+w2*nvL(i)+dT*(i-n))*nvS(d);
@@ -155,7 +155,7 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 		}else{
 		
 		if(i<n){
-			dVAR = 0.06*pow(nvX(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
+			dVAR = 0.06*pow(nvY(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
 			
 			if(i<=(n-o)){ //Make predictions "o" steps ahead
 				for(int j=0; j<o; j++){
@@ -169,25 +169,25 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 			
 			// If x is more than two standard deviation of one step ahead prediction value we set it 
 			// equal to predicted value + thold*sd when updating equations
-			if( nvX(i) < (nvFIL(i, 0)-thold*sqrt(dVAR)) || 
-							nvX(i) > (nvFIL(i, 0)+thold*sqrt(dVAR)) ){
+			if( nvY(i) < (nvFIL(i, 0)-thold*sqrt(dVAR)) || 
+							nvY(i) > (nvFIL(i, 0)+thold*sqrt(dVAR)) ){
 				
-				nvX(i) < nvFIL(i, 0) ? 
-					xhat = (nvFIL(i, 0)-thold*sqrt(dVAR)) : 
-					xhat = (nvFIL(i, 0)+thold*sqrt(dVAR)) ;
+				nvY(i) < nvFIL(i, 0) ? 
+					yhat = (nvFIL(i, 0)-thold*sqrt(dVAR)) : 
+					yhat = (nvFIL(i, 0)+thold*sqrt(dVAR)) ;
 								
 			
 			}else{
-				xhat=nvX(i);
+				yhat=nvY(i);
 			}
 			
 			dL1=dL;
-			dLfil=alfa*(xhat-nvS(d))+(1-alfa)*(dLfil+dT); 	//Filtered level updated with value of today
+			dLfil=alfa*(yhat-nvS(d))+(1-alfa)*(dLfil+dT); 	//Filtered level updated with value of today
 			dL=w1*dLfil+w2*nvL(i);
 			
 			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
 			
-			nvS(d)=gamma*(xhat-dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
+			nvS(d)=gamma*(yhat-dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
 			
 		}else{
 			/*std::cout << "w1: " << w1 << ", dLfil: " << dLfil << ", w2: " << w2 << ", nvL(i): " << nvL(i) <<
@@ -209,13 +209,13 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP PARAM, 
 			SEXP THOLD, SEXP STARTVAL, SEXP MULT) {
 	
-	NumericVector nvX(Y); NumericVector nvDAYS(DAYS); NumericVector nvL(L);
+	NumericVector nvY(Y); NumericVector nvDAYS(DAYS); NumericVector nvL(L);
 	
-	int n = nvX.size(); int f = nvDAYS.size()-n; int s = as<int>(S); 
+	int n = nvY.size(); int f = nvDAYS.size()-n; int s = as<int>(S); 
 	int d = 0; int m = as<int>(MULT); int o = as<int>(OPTNOUT);
 
 	
-	double xhat = 0; // Normalized x when outliers detected
+	double yhat = 0; // Normalized x when outliers detected
 	double thold = as<double>(THOLD); //Number of standard deviations for treshold (0 < > 4)
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
@@ -247,7 +247,7 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 			
 			
 		if(i<n){
-			dVAR = 0.06*pow(nvX(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
+			dVAR = 0.06*pow(nvY(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
 			
 			if(i<=(n-o)){ //Make predictions "o" steps ahead
 				for(int j=0; j<o; j++){
@@ -261,25 +261,25 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 			
 			// If x is more than two standard deviation of one step ahead prediction value we set it 
 			// equal to predicted value + thold*sd when updating equations
-			if( nvX(i) < (nvFIL(i, 0)-thold*sqrt(dVAR)) || 
-							nvX(i) > (nvFIL(i, 0)+thold*sqrt(dVAR)) ){
+			if( nvY(i) < (nvFIL(i, 0)-thold*sqrt(dVAR)) || 
+							nvY(i) > (nvFIL(i, 0)+thold*sqrt(dVAR)) ){
 				
-				nvX(i) < nvFIL(i, 0) ? 
-					xhat = (nvFIL(i, 0)-thold*sqrt(dVAR)) : 
-					xhat = (nvFIL(i, 0)+thold*sqrt(dVAR)) ;
+				nvY(i) < nvFIL(i, 0) ? 
+					yhat = (nvFIL(i, 0)-thold*sqrt(dVAR)) : 
+					yhat = (nvFIL(i, 0)+thold*sqrt(dVAR)) ;
 								
 			
 			}else{
-				xhat=nvX(i);
+				yhat=nvY(i);
 			}
 			
 			dL1=dL;
-			dLfil=alfa*(xhat/nvS(d))+(1-alfa)*(dLfil+dT);	//Filtered level updated with value of today
+			dLfil=alfa*(yhat/nvS(d))+(1-alfa)*(dLfil+dT);	//Filtered level updated with value of today
 			dL=w1*dLfil+w2*nvL(i);
 			
 			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
 			
-			nvS(d)=gamma*(xhat/dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
+			nvS(d)=gamma*(yhat/dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
 			
 		}else{
 			nvFIL(i, 0) = (w1*dLfil+w2*nvL(i)+dT*(i-n))*nvS(d);
@@ -292,7 +292,7 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 		}else{
 		
 		if(i<n){
-			dVAR = 0.06*pow(nvX(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
+			dVAR = 0.06*pow(nvY(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
 			
 			if(i<=(n-o)){ //Make predictions "o" steps ahead
 				for(int j=0; j<o; j++){
@@ -306,25 +306,25 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 			
 			// If x is more than two standard deviation of one step ahead prediction value we set it 
 			// equal to predicted value + thold*sd when updating equations
-			if( nvX(i) < (nvFIL(i, 0)-thold*sqrt(dVAR)) || 
-							nvX(i) > (nvFIL(i, 0)+thold*sqrt(dVAR)) ){
+			if( nvY(i) < (nvFIL(i, 0)-thold*sqrt(dVAR)) || 
+							nvY(i) > (nvFIL(i, 0)+thold*sqrt(dVAR)) ){
 				
-				nvX(i) < nvFIL(i, 0) ? 
-					xhat = (nvFIL(i, 0)-thold*sqrt(dVAR)) : 
-					xhat = (nvFIL(i, 0)+thold*sqrt(dVAR)) ;
+				nvY(i) < nvFIL(i, 0) ? 
+					yhat = (nvFIL(i, 0)-thold*sqrt(dVAR)) : 
+					yhat = (nvFIL(i, 0)+thold*sqrt(dVAR)) ;
 								
 			
 			}else{
-				xhat=nvX(i);
+				yhat=nvY(i);
 			}
 			
 			dL1=dL;
-			dLfil=alfa*(xhat-nvS(d))+(1-alfa)*(dLfil+dT); 	//Filtered level updated with value of today
+			dLfil=alfa*(yhat-nvS(d))+(1-alfa)*(dLfil+dT); 	//Filtered level updated with value of today
 			dL=w1*dLfil+w2*nvL(i);
 			
 			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
 			
-			nvS(d)=gamma*(xhat-dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
+			nvS(d)=gamma*(yhat-dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
 			
 		}else{
 			/*std::cout << "w1: " << w1 << ", dLfil: " << dLfil << ", w2: " << w2 << ", nvL(i): " << nvL(i) <<
