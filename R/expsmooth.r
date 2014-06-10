@@ -108,7 +108,7 @@ hw_triple <- function(y, s, nout=0, param=NULL, doOptim=TRUE, opt.nout=7, trend=
 #													#
 #########################################################################################################
 
-OPThw_simday <- function(y, ymat, days, l=l, s, opt.nout, param, trend, w1, w2, setw, thold, startVal, scorefunc, trim, mult){
+OPThw_simday <- function(y, ymat, days, l, s, opt.nout, param, trend, w1, w2, setw, thold, startVal, scorefunc, trim, mult){
 	n <- length(y)
 	
 	if(trend & setw){
@@ -240,12 +240,12 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 #													#
 #########################################################################################################
 
-OPThw_simday_reg <- function(y, ymat, days, l=l, s, opt.nout, param, trend, w1, w2, setw, thold, startVal, scorefunc, trim, mult){
+OPThw_simday_reg <- function(y, ymat, days, l, s, x, opt.nout, param, beta, w1, w2, setw, thold, startVal, scorefunc, trim, mult){
 	n <- length(y)
 	
-	if(trend & setw){
+	if(beta & setw){
   		param_ <- param
-	}else if(trend){
+	}else if(beta){
   		param_ <- c(param[1], param[2], param[3], w1, w2)
   	}else if(setw){
   		param_ <- c(param[1], INVunityf(0), param[2], param[3], param[4])
@@ -254,23 +254,25 @@ OPThw_simday_reg <- function(y, ymat, days, l=l, s, opt.nout, param, trend, w1, 
   	}	
 
 
-	fitval <- .Call("HW_SIMDAY_REG", Y=y, DAYS=days, L=l, S=s, X=rep(0, length(days)), OPTNOUT=opt.nout, PARAM=param_, THOLD=thold,
+	fitval <- .Call("HW_SIMDAY_REG", Y=y, DAYS=days, L=l, S=s, X=x, OPTNOUT=opt.nout, PARAM=param_, THOLD=thold,
 			             STARTVAL=startVal, MULT=mult, PACKAGE = "predX")
 			
 	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], fitval[(s*2+1):(n-opt.nout+1), ], trim=trim)
 
 }
 
-hw_simday_reg <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, trend=TRUE, thold=3, setw=FALSE,
+hw_simday_reg <- function(y, days, l=NULL, x=NULL, param=NULL, doOptim=TRUE, opt.nout=7, beta=TRUE, thold=3, setw=FALSE,
 			mult=FALSE, scorefunc=fMSE, trim=0, solver.method="Nelder-Mead", solver.control=list()){
 	
 	#setw needs to be TRUE if w1 and w2 is either provided through param or to be optimized
-	#if Trend is True a parameter for the trend coefficient must be provided
+	#if beta is True a parameter for the beta coefficient must be provided
 	
 	n <- length(y); nout <- length(days)-n; s <- length(unique(days));
 	nn <- min(10*s, n) #Number of days used of initializing seasonal component
 	
-	nparam <- 2+trend+setw*2
+	if(is.null(x))x <- rep(0, n+nout)
+	
+	nparam <- 2+beta+setw*2
 	# Parameter vector, is transformed trough 1/(1+exp(-x)) in c++ to ensure 0<>1
 	if(length(param)<nparam & doOptim){	#Bad param vector for optimization 
 		param <-  rep(0.25, nparam) #Create start values
@@ -294,13 +296,13 @@ hw_simday_reg <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7,
 	#print(paste0("w1 = ", w1, ", w2 = ", w2))
 	
 	# Start values
-	startVal = rep(NA, s+3) #Level0 Trend0, and Seas1:s
-	startVal[1] <- sd(y); startVal[2] <- mean(y[1:nn]); startVal[3] <- 0
+	startVal = rep(NA, s+3) #Level0 beta0, and Seas1:s
+	startVal[1] <- sd(y); startVal[2] <- mean(y[1:nn]); 
 	
 	if(mult){
-		startVal[4:(s+3)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y[1:nn])
+		startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x/mean(y[1:nn])
 	}else{
-		startVal[4:(s+3)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x-mean(y[1:nn])
+		startVal[3:(s+2)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x-mean(y[1:nn])
 	}
 
 	#Matrix used for efficient evaluation of model predictions errors at each step in filtration
@@ -315,7 +317,7 @@ hw_simday_reg <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7,
 	if(doOptim){
 
 		opt <- optim(param[1:nparam], OPThw_simday_reg, y=y, ymat=ymat, days=days[1:n], l=l[1:n], s=s, opt.nout=opt.nout, 
-			setw=setw, trend=trend, w1=w1, w2=w2, thold=thold, startVal=startVal, scorefunc=scorefunc, 
+			setw=setw, beta=beta, w1=w1, w2=w2, thold=thold, startVal=startVal, scorefunc=scorefunc, 
 			trim=trim, mult=mult, method=solver.method, control=solver.control)
 
 		
@@ -326,9 +328,9 @@ hw_simday_reg <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7,
 	}
 	
 	
-	if(trend & setw){
+	if(beta & setw){
 		param_ <- param
-	}else if(trend){
+	}else if(beta){
 		param_ <- c(param[1], param[2], param[3], w1, w2)
 	}else if(setw){
 		param_ <- c(param[1], INVunityf(0), param[2], param[3], param[4])
