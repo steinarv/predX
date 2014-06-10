@@ -210,6 +210,7 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 			SEXP THOLD, SEXP STARTVAL, SEXP MULT) {
 	
 	NumericVector nvY(Y); NumericVector nvDAYS(DAYS); NumericVector nvL(L);
+	NumericVector nvX(X);
 	
 	int n = nvY.size(); int f = nvDAYS.size()-n; int s = as<int>(S); 
 	int d = 0; int m = as<int>(MULT); int o = as<int>(OPTNOUT);
@@ -249,14 +250,13 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 		if(i<n){
 			dVAR = 0.06*pow(nvY(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
 			
+			nvFIL(i, 0)=(dL+dT)*nvS(d);
 			if(i<=(n-o)){ //Make predictions "o" steps ahead
-				for(int j=0; j<o; j++){
+				for(int j=1; j<o; j++){
 					d=nvDAYS(i+j);
 					nvFIL(i, j)=(dL+dT*(j+1))*nvS(d); //Predicted/Filtered value for "today"
 				}
 				d = nvDAYS(i);
-			}else{
-				nvFIL(i, 0)=(dL+dT)*nvS(d);
 			}
 			
 			// If x is more than two standard deviation of one step ahead prediction value we set it 
@@ -294,14 +294,13 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 		if(i<n){
 			dVAR = 0.06*pow(nvY(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
 			
+			nvFIL(i, 0)=dL+dT+nvS(d);
 			if(i<=(n-o)){ //Make predictions "o" steps ahead
-				for(int j=0; j<o; j++){
+				for(int j=1; j<o; j++){
 					d=nvDAYS(i+j);
 					nvFIL(i, j)=dL+dT*(j+1)+nvS(d); //Predicted/Filtered value for "today"
 				}
 				d = nvDAYS(i);
-			}else{
-				nvFIL(i, 0)=dL+dT+nvS(d);
 			}
 			
 			// If x is more than two standard deviation of one step ahead prediction value we set it 
