@@ -335,7 +335,7 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 			/*std::cout << "w1: " << w1 << ", dLfil: " << dLfil << ", w2: " << w2 << ", nvL(i): " << nvL(i) <<
 			", dT: " << dT << ", (i-n): " << (i-n) << ", nvS(d): " << nvS(d) << std::endl;*/
 			dLfil = dLfil+(1-alpha)*(beta*nvX(i));		//Makes it possible to exclude explanatory var for some i
-			nvFIL(i, 0) = w1*dLfil+w2*nvL(i)+dT*(i-n)+nvS(d);
+			nvFIL(i, 0) = w1*dLfil+w2*nvL(i)+nvS(d);
 		}
 		
 	} // En if multiplicative/additive
