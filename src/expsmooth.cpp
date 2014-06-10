@@ -165,7 +165,7 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 					nvFIL(i, j)=w1*dLfil+w2*nvL(i+j)+dT*(j+1)+nvS(d); //Predicted/Filtered value for "today"
 					if(i==1){
 						std::cout << "j = " << j <<", d = " << d << ", dLfil: " << dLfil <<
-						", dLfil_: " << dLfil_ << std::endl;
+						", dT: " << dT << ", nvFIL(i, j): " << nvFIL(i, j) << std::endl;
 					}
 				}
 				d = nvDAYS(i);
@@ -315,7 +315,7 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 					nvFIL(i, j)=(w1*dLfil_+w2*nvL(i))+nvS(d); //Predicted/Filtered value for "today"
 					if(i==1){
 						std::cout << "j = " << j <<", d = " << d << ", dLfil: " << dLfil <<
-						", dLfil_: " << dLfil_ << std::endl;
+						", dLfil_: " << dLfil_ << ", nvFIL(i, j): " << nvFIL(i, j) << std::endl;
 					}
 				}
 				d = nvDAYS(i);
