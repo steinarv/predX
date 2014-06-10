@@ -253,7 +253,7 @@ OPThw_simday_reg <- function(y, ymat, days, l=l, s, opt.nout, param, trend, w1, 
   	}	
 
 
-	fitval <- .Call("HW_SIMDAY_REG", Y=y, DAYS=days, L=l, S=s, OPTNOUT=opt.nout, PARAM=param_, THOLD=thold,
+	fitval <- .Call("HW_SIMDAY_REG", Y=y, DAYS=days, L=l, S=s, X=0, OPTNOUT=opt.nout, PARAM=param_, THOLD=thold,
 			             STARTVAL=startVal, MULT=mult, PACKAGE = "predX")
 			
 	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], fitval[(s*2+1):(n-opt.nout+1), ], trim=trim)
@@ -340,7 +340,7 @@ hw_simday_reg <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7,
 
 	
 	if(doOptim)opt.nout <- 1 #Save some time in final filtration
-	fit <- .Call("HW_SIMDAY_REG", Y=y, DAYS=days, L=l, S=s, OPTNOUT=opt.nout, PARAM=param_, THOLD=thold, 	
+	fit <- .Call("HW_SIMDAY_REG", Y=y, DAYS=days, L=l, S=s, X=0, OPTNOUT=opt.nout, PARAM=param_, THOLD=thold, 	
 			        STARTVAL=startVal, MULT=mult, PACKAGE = "predX" )
 	#Parameters is passed by address and param_ is altered (1/(1+exp(-x)))
 
