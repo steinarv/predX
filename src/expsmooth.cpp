@@ -308,7 +308,7 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 			if(i<=(n-o)){ //Make predictions "o" steps ahead
 				for(int j=1; j<o; j++){
 					dLfil_ = dLfil_+(1-alpha)*(beta*nvX(i+j));
-					std::cout << i << "  -  " << dLfil_ << std::endl;
+					std::cout << i << "  -  " << dLfil_ << "  -  " << o << "  -  " << j << std::endl;
 					d=nvDAYS(i+j);
 					nvFIL(i, j)=(w1*dLfil_+w2*nvL(i))+nvS(d); //Predicted/Filtered value for "today"
 				}
