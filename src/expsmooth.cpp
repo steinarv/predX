@@ -163,6 +163,10 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 				for(int j=1; j<o; j++){
 					d=nvDAYS(i+j);
 					nvFIL(i, j)=w1*dLfil+w2*nvL(i+j)+dT*(j+1)+nvS(d); //Predicted/Filtered value for "today"
+					if(i==1){
+						std::cout << "j = " << j <<", d = " << d << ", dLfil: " << dLfil <<
+						", dLfil_: " << dLfil_ << std::endl;
+					}
 				}
 				d = nvDAYS(i);
 			}
@@ -190,11 +194,11 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 			nvS(d)=gamma*(yhat-dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
 			
 		}else{
-			std::cout << "w1: " << w1 << ", dLfil: " << dLfil << ", w2: " << w2 << ", nvL(i): " << nvL(i) <<
+			/*std::cout << "w1: " << w1 << ", dLfil: " << dLfil << ", w2: " << w2 << ", nvL(i): " << nvL(i) <<
 			", dT: " << dT << ", (i-n): " << (i-n) << ", nvS(d): " << nvS(d) <<
-			", alpha: " << alpha << ", beta: " << beta << ", gamma: " << gamma << std::endl;
+			", alpha: " << alpha << ", beta: " << beta << ", gamma: " << gamma << std::endl;*/
 			nvFIL(i, 0) = w1*dLfil+w2*nvL(i)+dT*(i-n)+nvS(d);
-			std::cout << "Step ahead prediction is: " << nvFIL(i, 0) << std::endl;
+			//std::cout << "Step ahead prediction is: " << nvFIL(i, 0) << std::endl;
 		}
 		
 	} // En if multiplicative/additive
@@ -309,6 +313,10 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 					dLfil_ = dLfil_+(1-alpha)*(beta*nvX(i+j));
 					d=nvDAYS(i+j);
 					nvFIL(i, j)=(w1*dLfil_+w2*nvL(i))+nvS(d); //Predicted/Filtered value for "today"
+					if(i==1){
+						std::cout << "j = " << j <<", d = " << d << ", dLfil: " << dLfil <<
+						", dLfil_: " << dLfil_ << std::endl;
+					}
 				}
 				d = nvDAYS(i);
 			}
@@ -335,12 +343,12 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 			nvS(d)=gamma*(yhat-dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
 			
 		}else{
-			std::cout << "w1: " << w1 << ", dLfil: " << dLfil << ", w2: " << w2 << ", nvL(i): " << nvL(i) <<
+			/*std::cout << "w1: " << w1 << ", dLfil: " << dLfil << ", w2: " << w2 << ", nvL(i): " << nvL(i) <<
 			", nvX(i): " << nvX(i) << ", (i-n): " << (i-n) << ", nvS(d): " << nvS(d) <<
-			", alpha: " << alpha << ", beta: " << beta << ", gamma: " << gamma << std::endl;
+			", alpha: " << alpha << ", beta: " << beta << ", gamma: " << gamma << std::endl;*/
 			dLfil = dLfil+(1-alpha)*(beta*nvX(i));		//Makes it possible to exclude explanatory var for some i
 			nvFIL(i, 0) = w1*dLfil+w2*nvL(i)+nvS(d);
-			std::cout << "Step ahead prediction is: " << nvFIL(i, 0) << std::endl;
+			//std::cout << "Step ahead prediction is: " << nvFIL(i, 0) << std::endl;
 		}
 		
 	} // En if multiplicative/additive
