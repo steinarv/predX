@@ -171,16 +171,17 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 		startVal[4:(s+3)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x-mean(y[1:nn])
 	}
 
+	#Matrix used for efficient evaluation of model predictions errors at each step in filtration
+	if(opt.nout>1){
+		ymat <- t(sapply(1:(n-opt.nout+1), FUN=function(x)y[x:(x+opt.nout-1)]))
+	}else{
+		ymat <- matrix(y, ncol=1)
+	}
+
+
 	
 	# Optimization
 	if(doOptim){
-		#Matrix used for efficient estimation of model predictions errors at each step in filtration
-		if(opt.nout>1){
-			ymat <- t(sapply(1:(n-opt.nout+1), FUN=function(x)y[x:(x+opt.nout-1)]))
-		}else{
-			ymat <- matrix(y, ncol=1)
-		}
-		
 
 		opt <- optim(param[1:nparam], OPThw_simday, y=y, ymat=ymat, days=days[1:n], l=l[1:n], s=s, opt.nout=opt.nout, 
 			setw=setw, trend=trend, w1=w1, w2=w2, thold=thold, startVal=startVal, scorefunc=scorefunc, 
@@ -219,7 +220,7 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	lOut <- c(opt, list(startVal=startVal, fitIn=fit[1:n, 1]))
 	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))	
 	if(!doOptim)lOut$value <-
-	scorefunc(y[(s*2+1):(n-opt.nout+1), ], lOut$fitIn[(s*2+1):(n-opt.nout+1), ], trim=trim)
+	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], lOut$fitIn[(s*2+1):(n-opt.nout+1), ], trim=trim)
 	
 	lOut
 
@@ -302,16 +303,16 @@ hw_simday_reg <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7,
 		startVal[4:(s+3)] <- aggregate(y[1:nn], by=list(days[1:nn]), mean)$x-mean(y[1:nn])
 	}
 
+	#Matrix used for efficient evaluation of model predictions errors at each step in filtration
+	if(opt.nout>1){
+		ymat <- t(sapply(1:(n-opt.nout+1), FUN=function(x)y[x:(x+opt.nout-1)]))
+	}else{
+		ymat <- matrix(y, ncol=1)
+	}
+
 	
 	# Optimization
 	if(doOptim){
-		#Matrix used for efficient estimation of model predictions errors at each step in filtration
-		if(opt.nout>1){
-			ymat <- t(sapply(1:(n-opt.nout+1), FUN=function(x)y[x:(x+opt.nout-1)]))
-		}else{
-			ymat <- matrix(y, ncol=1)
-		}
-		
 
 		opt <- optim(param[1:nparam], OPThw_simday_reg, y=y, ymat=ymat, days=days[1:n], l=l[1:n], s=s, opt.nout=opt.nout, 
 			setw=setw, trend=trend, w1=w1, w2=w2, thold=thold, startVal=startVal, scorefunc=scorefunc, 
@@ -350,7 +351,7 @@ hw_simday_reg <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7,
 	lOut <- c(opt, list(startVal=startVal, fitIn=fit[1:n, 1]))
 	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))	
 	if(!doOptim)lOut$value <-
-	scorefunc(y[(s*2+1):(n-opt.nout+1), ], lOut$fitIn[(s*2+1):(n-opt.nout+1), ], trim=trim)
+	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], lOut$fitIn[(s*2+1):(n-opt.nout+1), ], trim=trim)
 	
 	lOut
 
