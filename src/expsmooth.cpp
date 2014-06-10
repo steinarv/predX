@@ -190,8 +190,8 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 			nvS(d)=gamma*(yhat-dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
 			
 		}else{
-			/*std::cout << "w1: " << w1 << ", dLfil: " << dLfil << ", w2: " << w2 << ", nvL(i): " << nvL(i) <<
-			", dT: " << dT << ", (i-n): " << (i-n) << ", nvS(d): " << nvS(d) << std::endl;*/
+			std::cout << "w1: " << w1 << ", dLfil: " << dLfil << ", w2: " << w2 << ", nvL(i): " << nvL(i) <<
+			", dT: " << dT << ", (i-n): " << (i-n) << ", nvS(d): " << nvS(d) << std::endl;
 			nvFIL(i, 0) = w1*dLfil+w2*nvL(i)+dT*(i-n)+nvS(d);
 		}
 		
@@ -298,17 +298,13 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 		if(i<n){
 			dVAR = 0.06*pow(nvY(i-1)-nvFIL(i-1, 0), 2)+0.94*dVAR;
 			
-			std::cout << i << "  -  " << dLfil << std::endl;
-			
+
 			dLfil_ = dLfil+(1-alpha)*(beta*nvX(i)); //filter updated with exvar but not todays obs
 			nvFIL(i, 0)=(w1*dLfil_+w2*nvL(i))+nvS(d);
-			
-			std::cout << i << "  -  " << dLfil_ << std::endl;
 			
 			if(i<=(n-o)){ //Make predictions "o" steps ahead
 				for(int j=1; j<o; j++){
 					dLfil_ = dLfil_+(1-alpha)*(beta*nvX(i+j));
-					std::cout << i << "  -  " << dLfil_ << "  -  " << o << "  -  " << j << std::endl;
 					d=nvDAYS(i+j);
 					nvFIL(i, j)=(w1*dLfil_+w2*nvL(i))+nvS(d); //Predicted/Filtered value for "today"
 				}
@@ -337,8 +333,8 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 			nvS(d)=gamma*(yhat-dL)+(1-gamma)*nvS(d); 	//Seasonal component updated 
 			
 		}else{
-			/*std::cout << "w1: " << w1 << ", dLfil: " << dLfil << ", w2: " << w2 << ", nvL(i): " << nvL(i) <<
-			", dT: " << dT << ", (i-n): " << (i-n) << ", nvS(d): " << nvS(d) << std::endl;*/
+			std::cout << "w1: " << w1 << ", dLfil: " << dLfil << ", w2: " << w2 << ", nvL(i): " << nvL(i) <<
+			", dT: " << dT << ", (i-n): " << (i-n) << ", nvS(d): " << nvS(d) << std::endl;
 			dLfil = dLfil+(1-alpha)*(beta*nvX(i));		//Makes it possible to exclude explanatory var for some i
 			nvFIL(i, 0) = w1*dLfil+w2*nvL(i)+nvS(d);
 		}
