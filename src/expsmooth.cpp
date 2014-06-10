@@ -241,7 +241,7 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 	double dLfil_ = dLfil;		//filtered level used in "o" steps prediction for optimization
 
 	
-	for(int i=0;i<(s);i++)nvS(i)=nvSTARTVAL(i+3); //Seasonal effects
+	for(int i=0;i<(s);i++)nvS(i)=nvSTARTVAL(i+2); //Seasonal effects
 	
 
 	for(int i=1;i<(n+f);i++){
