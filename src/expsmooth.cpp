@@ -115,11 +115,11 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 			if(i<=(n-o)){ //Make predictions "o" steps ahead
 				for(int j=0; j<o; j++){
 					d=nvDAYS(i+j);
-					nvFIL(i, j)=(dL+dT*(j+1))*nvS(d); //Predicted/Filtered value for "today"
+					nvFIL(i, j)=(w1*dLfil+w2*nvL(i+j)+dT*(j+1))*nvS(d); //Predicted/Filtered value for "today"
 				}
 				d = nvDAYS(i);
 			}else{
-				nvFIL(i, 0)=(dL+dT)*nvS(d);
+				nvFIL(i, 0)=(w1*dLfil+w2*nvL(i)+dT)*nvS(d);
 			}
 			
 			// If x is more than two standard deviation of one step ahead prediction value we set it 
@@ -160,11 +160,11 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 			if(i<=(n-o)){ //Make predictions "o" steps ahead
 				for(int j=0; j<o; j++){
 					d=nvDAYS(i+j);
-					nvFIL(i, j)=dL+dT*(j+1)+nvS(d); //Predicted/Filtered value for "today"
+					nvFIL(i, j)=w1*dLfil+w2*nvL(i+j)+dT*(j+1)+nvS(d); //Predicted/Filtered value for "today"
 				}
 				d = nvDAYS(i);
 			}else{
-				nvFIL(i, 0)=dL+dT+nvS(d);
+				nvFIL(i, 0)=w1*dLfil+w2*nvL(i)+dT+nvS(d);
 			}
 			
 			// If x is more than two standard deviation of one step ahead prediction value we set it 
