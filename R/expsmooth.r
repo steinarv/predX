@@ -220,7 +220,7 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 	lOut <- c(opt, list(startVal=startVal, fitIn=fit[1:n, 1]))
 	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))	
 	if(!doOptim)lOut$value <-
-	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], lOut$fitIn[(s*2+1):(n-opt.nout+1), ], trim=trim)
+	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], fit[(s*2+1):(n-opt.nout+1), ], trim=trim)
 	
 	lOut
 
@@ -351,7 +351,7 @@ hw_simday_reg <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7,
 	lOut <- c(opt, list(startVal=startVal, fitIn=fit[1:n, 1]))
 	if(nout>0)lOut <- c(lOut, list(fitOut=fit[(n+1):(n+nout), 1]))	
 	if(!doOptim)lOut$value <-
-	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], lOut$fitIn[(s*2+1):(n-opt.nout+1), ], trim=trim)
+	scorefunc(ymat[(s*2+1):(n-opt.nout+1), ], fit[(s*2+1):(n-opt.nout+1), ], trim=trim)
 	
 	lOut
 
