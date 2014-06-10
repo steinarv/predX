@@ -10,7 +10,7 @@ SEXP HW_TRIPLE(SEXP Y, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP STARTVAL, SEXP NOU
 	int s = as<int>(S); int o = as<int>(OPTNOUT); int m = as<int>(MULT);
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
-	double alfa = nvPARAM(0); double beta = nvPARAM(1); double gamma = nvPARAM(2);
+	double alpha = nvPARAM(0); double beta = nvPARAM(1); double gamma = nvPARAM(2);
 	
 	NumericVector nvS(s); NumericMatrix nvFIL(n+f, o);
 	NumericVector nvSTARTVAL(STARTVAL);
@@ -35,7 +35,7 @@ SEXP HW_TRIPLE(SEXP Y, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP STARTVAL, SEXP NOU
 			
 			
 			dL1=dL;
-			dL=alfa*nvY(i)/nvS(i%s)+(1-alfa)*(dL+dT); 	//Level updated with value of today
+			dL=alpha*nvY(i)/nvS(i%s)+(1-alpha)*(dL+dT); 	//Level updated with value of today
 			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
 			nvS(i%s)=gamma*nvY(i)/dL+(1-gamma)*nvS(i%s); 	//Season updated
 		}else{
@@ -54,7 +54,7 @@ SEXP HW_TRIPLE(SEXP Y, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP STARTVAL, SEXP NOU
 			
 			
 			dL1=dL;
-			dL=alfa*(nvY(i)-nvS(i%s))+(1-alfa)*(dL+dT); 	//Level updated with value of today
+			dL=alpha*(nvY(i)-nvS(i%s))+(1-alpha)*(dL+dT); 	//Level updated with value of today
 			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
 			nvS(i%s)=gamma*(nvY(i)-dL)+(1-gamma)*nvS(i%s); 	//Season updated
 		}else{
@@ -82,10 +82,10 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 	double thold = as<double>(THOLD); //Number of standard deviations for treshold (0 < > 4)
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
-	double alfa = nvPARAM(0); double beta = nvPARAM(1); double gamma = nvPARAM(2);
+	double alpha = nvPARAM(0); double beta = nvPARAM(1); double gamma = nvPARAM(2);
 	double w1 = nvPARAM(3); double w2 = nvPARAM(4); //w1 = 1 and w2 = 0 when no external level is supplied
 	
-	/*std::cout << "alfa: " << alfa << ", beta: " << beta << ", gamma: " << gamma <<
+	/*std::cout << "alpha: " << alpha << ", beta: " << beta << ", gamma: " << gamma <<
 	", w1: " << w1 << ", w2: " << w2 << std::endl;*/
 	
 	NumericVector nvS(s); NumericMatrix nvFIL(n+f, o);
@@ -137,7 +137,7 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 			}
 			
 			dL1=dL;
-			dLfil=alfa*(yhat/nvS(d))+(1-alfa)*(dLfil+dT);	//Filtered level updated with value of today
+			dLfil=alpha*(yhat/nvS(d))+(1-alpha)*(dLfil+dT);	//Filtered level updated with value of today
 			dL=w1*dLfil+w2*nvL(i);
 			
 			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
@@ -182,7 +182,7 @@ SEXP HW_SIMDAY(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP OPTNOUT, SEXP PARAM, SEXP
 			}
 			
 			dL1=dL;
-			dLfil=alfa*(yhat-nvS(d))+(1-alfa)*(dLfil+dT); 	//Filtered level updated with value of today
+			dLfil=alpha*(yhat-nvS(d))+(1-alpha)*(dLfil+dT); 	//Filtered level updated with value of today
 			dL=w1*dLfil+w2*nvL(i);
 			
 			dT=beta*(dL-dL1)+(1-beta)*dT;			//Trend updated with change in level
@@ -220,10 +220,10 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 	double thold = as<double>(THOLD); //Number of standard deviations for treshold (0 < > 4)
 	
 	NumericVector nvPARAM(PARAM); unityFunc(nvPARAM);
-	double alfa = nvPARAM(0); double beta = nvPARAM(1); double gamma = nvPARAM(2);
+	double alpha = nvPARAM(0); double beta = nvPARAM(1); double gamma = nvPARAM(2);
 	double w1 = nvPARAM(3); double w2 = nvPARAM(4); //w1 = 1 and w2 = 0 when no external level is supplied
 	
-	/*std::cout << "alfa: " << alfa << ", beta: " << beta << ", gamma: " << gamma <<
+	/*std::cout << "alpha: " << alpha << ", beta: " << beta << ", gamma: " << gamma <<
 	", w1: " << w1 << ", w2: " << w2 << std::endl;*/
 	
 	NumericVector nvS(s); NumericMatrix nvFIL(n+f, o);
@@ -277,7 +277,7 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 			}
 			
 			
-			dLfil=alfa*(yhat/nvS(d))+(1-alfa)*(dLfil+beta*nvX(i));	//Filtered level updated with value of today
+			dLfil=alpha*(yhat/nvS(d))+(1-alpha)*(dLfil+beta*nvX(i));	//Filtered level updated with value of today
 			dL=w1*dLfil+w2*nvL(i);					//and explanatory variable. The a weighted
 										//average between filtered level and
 										//level provided by user is computed
@@ -324,7 +324,7 @@ SEXP HW_SIMDAY_REG(SEXP Y, SEXP DAYS, SEXP L, SEXP S, SEXP X, SEXP OPTNOUT, SEXP
 				yhat=nvY(i);
 			}
 			
-			dLfil=alfa*(yhat-nvS(d))+(1-alfa)*(dLfil+beta*nvX(i));	//Filtered level updated with value of today
+			dLfil=alpha*(yhat-nvS(d))+(1-alpha)*(dLfil+beta*nvX(i));	//Filtered level updated with value of today
 			dL=w1*dLfil+w2*nvL(i);					//and explanatory variable. The a weighted
 										//average between filtered level and
 										//level provided by user is computed
