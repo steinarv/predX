@@ -189,6 +189,7 @@ hw_simday <- function(y, days, l=NULL, param=NULL, doOptim=TRUE, opt.nout=7, tre
 
 		
 		param <- opt$par
+		print(1/(1+exp(-param)))
 		
 	}else{
 		opt <- list(value=NA, par=numeric(5))
