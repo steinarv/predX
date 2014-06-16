@@ -23,4 +23,5 @@ INVunityf <- function(x){
 # ----------- Score functiona -------------------------------------------------
 fMSE <- function(y, x, trim=0)mean((y-x)^2, trim=trim)
 fABS <- function(y, x, trim=0)mean(abs(y-x), trim=trim)
+fMAPE <- function(y, x, trim=0)mean(abs((y-x)/y), trim=trim)
 # ------------------------------------------------------------------------------
